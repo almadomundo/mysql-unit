@@ -9,5 +9,5 @@ VALUES
 ('REGEXP_REPLACE', 'REGEXP_REPLACE("foo93baz bar18", "foo|[0-9]+", "-")', '--baz bar-', 0, NULL),
 ('REGEXP_REPLACE', 'REGEXP_REPLACE("foo933baz bar18", "foo|[0-8]", "-")', '-9--baz bar--', 0, NULL),
 ('REGEXP_REPLACE', 'REGEXP_REPLACE("foobarbaz", "[a-z]+", "")', '', 0, NULL),
-('REGEXP_REPLACE', 'REGEXP_REPLACE("foobarbaz", "[a-z]+")', '?', 1, '1310')
+('REGEXP_REPLACE', 'REGEXP_REPLACE("foobarbaz", "[a-z]+")', '?', 0, '1310')
 ;
