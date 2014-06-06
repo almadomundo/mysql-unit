@@ -1,6 +1,6 @@
-DELETE FROM TEST_ASSERTIONS WHERE function_name='REGEXP_REPLACE';
+DELETE FROM TEST_FUNCTION_ASSERTIONS WHERE function_name='REGEXP_REPLACE';
 
-INSERT INTO TEST_ASSERTIONS 
+INSERT INTO TEST_FUNCTION_ASSERTIONS 
 (`function_name`, `expression`, `value`, `is_error`, `error_code`)
 VALUES
 ('REGEXP_REPLACE', 'REGEXP_REPLACE("foo", "o", "-")', 'f--', 0, NULL),

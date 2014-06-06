@@ -1,8 +1,8 @@
 -- Base procedure for testing framework
 
-DROP PROCEDURE IF EXISTS TEST_BY_ASSERT_TABLE;
+DROP PROCEDURE IF EXISTS TEST_FUNCTION_BY_ASSERT;
 DELIMITER //
-CREATE PROCEDURE TEST_BY_ASSERT_TABLE(f VARCHAR(255), d TINYINT, t VARCHAR(255))
+CREATE PROCEDURE TEST_FUNCTION_BY_ASSERT(f VARCHAR(255), d TINYINT, t VARCHAR(255))
 BEGIN
    DECLARE message           VARCHAR(255) DEFAULT '';
    DECLARE error             VARCHAR(255) DEFAULT '';
@@ -15,7 +15,7 @@ BEGIN
    DECLARE tests_count       INT DEFAULT 0;
    DECLARE record_id         INT DEFAULT 0;
    DECLARE tests CURSOR FOR 
-     SELECT `id`, `expression`, `value`, `is_error`, `error_code` FROM TEST_ASSERTIONS WHERE IF(f, function_name=f, 1) && IF(t, id=t, 1);
+     SELECT `id`, `expression`, `value`, `is_error`, `error_code` FROM TEST_FUNCTION_ASSERTIONS WHERE IF(f, function_name=f, 1) && IF(t, id=t, 1);
    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION 
    BEGIN
@@ -104,8 +104,8 @@ BEGIN
          LEAVE read_loop;
       END IF;
       SET @statement_mysql_unit = CONCAT('SELECT ', record_expression, ' INTO @expression_mysql_unit');
-      PREPARE eval FROM @statement_mysql_unit;
-      EXECUTE eval;
+      PREPARE eval_mysql_unit FROM @statement_mysql_unit;
+      EXECUTE eval_mysql_unit;
       SET @record_id_mysql_unit          = record_id;
       SET @record_expression_mysql_unit  = record_expression;
       SET @record_value_mysql_unit       = record_value;

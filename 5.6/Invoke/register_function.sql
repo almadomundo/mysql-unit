@@ -13,7 +13,7 @@ BEGIN
       'END;', "\n"
       -- 'DELIMITER ;' , "\n"
    );
-   PREPARE eval FROM @statement_mysql_unit;
-   EXECUTE eval;
+   PREPARE eval_mysql_unit FROM @statement_mysql_unit;
+   EXECUTE eval_mysql_unit;
 END//
 DELIMITER ;
