@@ -90,3 +90,18 @@ If you don't want `test_trace` to be included, then, with `d` equal to `0`, it w
 mysql> CALL TEST_BY_ASSERT_TABLE('REGEXP_REPLACE', 0, '');
 ERROR 1644 (80200): Test id &lt; 28 > : expectation of validity failed. 
 </pre>
+
+**Run notes**
+
+Inside testing functions & procedures there may be defined some session-variables (they start with `@`). That means - even after performing tests, those variables will remain live in current session. To make sure they won't conflict with anything, the all have postfix `_mysql_unit`. So, for example,  `@record_is_error_mysql_unit`. If you're going to use this framework, I strongly recommend you to check if variables with that postfix are not used in your code/queries, otherwise it may cause unpredictable result.
+<br/>
+Because of using `SIGNAL` mechanics, it's restricted for you to use `8****` values for `SQLSTATE`, if your code is also uses that mechanism. If you need that, then probably you'll have to re-define those handlers inside testing procedure code, but I do not recommend to do that. Simply do not use those codes.
+
+
+**Plans**
+
+- Advanced stored procedures support. If procedure should return result set, then is will be tested properly.
+- API for adding/maintaining tests. 
+- Enable MySQL 5.5 support. Unfortunately, version `5.5` has some bugs with error handling, thus, it won't be possible to emulate full support.
+
+MySQL < 5.5 is _not planned_ and _won't be supported_.
