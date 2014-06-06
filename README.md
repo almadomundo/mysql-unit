@@ -37,10 +37,10 @@ The testing procedure will check tests one by one till _first failure_. That is:
 
 There are different failure reasons. All reasons have their own `SQLSTATE` codes, which always have `8****` mask. Currently, it can be:
 
-- `80000` : `Test id < x > : assertion failed`. That means, error handling for test passed normally, but there is a mismatch between test expression actual value and expected value
+- `80000` : `Test id &lt; x > : assertion failed`. That means, error handling for test passed normally, but there is a mismatch between test expression actual value and expected value
 - `80100` : `Tests for function specified name or test number were not found`. That means, there are no corresponding records in `TEST_ASSERTIONS` table. If `t` was passed, then there is no test with such identifier. If `f` is passed, then there are no tests with such `function_name` field value (See structure of `TEST_ASSERTIONS` table below)
-- `80200` : `Test id < x > : expectation of validity|ERROR failed`. This means that there is a mismatch between expected error and what really happened. So either test expected error which was not thrown by it, or test expected to be valid while error was thrown.
-- `80300` : `Test id < x > : expectation of ERROR code failed`. There is a mismatch between expected error code and actual error code. Applicable only for tests, which are expecting to throw error.
+- `80200` : `Test id &lt; x > : expectation of validity|ERROR failed`. This means that there is a mismatch between expected error and what really happened. So either test expected error which was not thrown by it, or test expected to be valid while error was thrown.
+- `80300` : `Test id &lt; x > : expectation of ERROR code failed`. There is a mismatch between expected error code and actual error code. Applicable only for tests, which are expecting to throw error.
 
 **Main testing table**
 
@@ -80,8 +80,13 @@ mysql> CALL TEST_BY_ASSERT_TABLE('REGEXP_REPLACE', 1, '');
 +---------+---------------------------------------+------------+---------------+--------------------------+------------------------+-----------------------------------------------------------------------------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 1 row in set (0.02 sec)
 
-ERROR 1644 (80200): Test id < 28 > : expectation of validity failed.
+ERROR 1644 (80200): Test id &lt; 28 > : expectation of validity failed.
 </pre>
 
 _Note, that `REGEXP_REPLACE()` is not a standard MySQL function, it's written by me in [mysql-regexp](https://github.com/almadomundo/mysql-regexp) project._
 <br/>
+If you don't want `test_trace` to be included, then, with `d` equal to `0`, it will be:
+<pre>
+mysql> CALL TEST_BY_ASSERT_TABLE('REGEXP_REPLACE', 0, '');
+ERROR 1644 (80200): Test id &lt; 28 > : expectation of validity failed. 
+</pre>
