@@ -1,11 +1,15 @@
 -- Check about existence of TABLE `unit_name` in `unit_db`
 
-DROP FUNCTION IF EXISTS CHECK_DDL_TABLE;
+DROP FUNCTION IF EXISTS CHECK_DDL_TABLE_EXISTS;
 DELIMITER //
-CREATE FUNCTION CHECK_DDL_TABLE(unit_db VARCHAR(255), unit_name VARCHAR(255), existence INT)
+CREATE FUNCTION CHECK_DDL_TABLE_EXISTS(unit_db VARCHAR(255), unit_name VARCHAR(255))
 RETURNS INT
 BEGIN
    DECLARE unit_count  INT DEFAULT 0;
+   IF !CHAR_LENGTH(unit_db) THEN
+      SET unit_db = DATABASE();
+   END IF;
+
    SELECT 
       COUNT(1) INTO unit_count 
    FROM 
@@ -13,6 +17,6 @@ BEGIN
    WHERE 
       `TABLE_SCHEMA` = unit_db &&
       `TABLE_NAME`   = unit_name;
-   RETURN !(unit_count!=0 XOR existence!=0);
+   RETURN unit_count>0;
 END//
 DELIMITER ;
