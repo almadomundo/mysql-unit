@@ -21,7 +21,7 @@ BEGIN
          test_id,
          test_expression,
          test_value,
-         d
+         tested_is_verbose
       );
    END IF;
    -- Tests were not found:
