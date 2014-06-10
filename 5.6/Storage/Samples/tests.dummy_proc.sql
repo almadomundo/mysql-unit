@@ -22,7 +22,7 @@ VALUES
 (@test_id_tmp_mysql_unit, '"VARCHAR(255)"');
 
 INSERT INTO TEST_PROCEDURE_RESULTS
-(`test_id`, `ref_expression`, `ref_value`)
+(`test_id`, `ref_expression`, `ref_value`, `ref_is_error`, `ref_error_code`)
 VALUES
-(@test_id_tmp_mysql_unit, 'CHECK_DDL_TABLE_EXISTS("", "foo")', 1),
-(@test_id_tmp_mysql_unit, 'CHECK_DDL_COLUMN_EXISTS("", "foo", "bar")', 1);
+(@test_id_tmp_mysql_unit, 'CHECK_DDL_TABLE_EXISTS()', 1, 1, '1318'),
+(@test_id_tmp_mysql_unit, 'CHECK_DDL_COLUMN_EXISTS("", "foo", "bar")', 1, 0, NULL);

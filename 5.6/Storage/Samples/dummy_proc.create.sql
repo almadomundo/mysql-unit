@@ -17,6 +17,5 @@ BEGIN
    );
    PREPARE eval_dummy_mysql_unit FROM @dummy_sql_mysql_unit;
    EXECUTE eval_dummy_mysql_unit;
-   SIGNAL SQLSTATE '88888';
 END//
 DELIMITER ;

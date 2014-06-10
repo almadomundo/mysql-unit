@@ -22,6 +22,8 @@ BEGIN
    DECLARE record_result_id      INT DEFAULT 0;
    DECLARE record_ref_expression VARCHAR(255) DEFAULT '';
    DECLARE record_ref_value      VARCHAR(255) DEFAULT '';
+   DECLARE record_ref_is_error   INT DEFAULT FALSE;
+   DECLARE record_ref_error_code VARCHAR(255) DEFAULT '';
    DECLARE record_assertion      INT DEFAULT 0;
    DECLARE tests_count           INT DEFAULT 0;
    DECLARE tests CURSOR FOR 
@@ -33,7 +35,9 @@ BEGIN
          GROUP_CONCAT(`argument_value` ORDER BY `TEST_PROCEDURE_ARGUMENTS`.`id`) AS arguments_list,
          `TEST_PROCEDURE_RESULTS`.`id` AS result_id,
          `ref_expression`,
-         `ref_value`
+         `ref_value`,
+         `ref_is_error`,
+         `ref_error_code`
       FROM 
          TEST_PROCEDURE_ASSERTIONS
          INNER JOIN
@@ -94,7 +98,9 @@ BEGIN
          record_arguments_list, 
          record_result_id, 
          record_ref_expression, 
-         record_ref_value;
+         record_ref_value,
+         record_ref_is_error,
+         record_ref_error_code;
       IF done THEN
          LEAVE read_loop;
       END IF;
@@ -104,31 +110,50 @@ BEGIN
          SET @statement_mysql_unit = CONCAT('CALL ', record_procedure_name, '(', record_arguments_list, ')');
          PREPARE eval_mysql_unit FROM @statement_mysql_unit;
          EXECUTE eval_mysql_unit;
+
+         SET @record_id_mysql_unit             = record_id;
+         SET @record_is_error_mysql_unit       = record_is_error;
+         SET @record_error_code_mysql_unit     = record_error_code;
+         SET @record_arguments_list_mysql_unit = record_arguments_list;
+         SET @record_result_id_mysql_unit      = record_result_id;
+         SET @record_expression_mysql_unit     = CONCAT(record_procedure_name, '(', record_arguments_list, ')');
+         SET @record_value_mysql_unit          = NULL;
+         SET @record_error_text_mysql_unit     = @thrown_message_mysql_unit;
+         SET @record_thrown_code_mysql_unit    = @thrown_code_mysql_unit;      
+         -- Error expectation:
+         IF record_is_error XOR CHAR_LENGTH(error) THEN
+            SIGNAL SQLSTATE '80400';
+         END IF;
+         IF record_is_error && CHAR_LENGTH(error) && record_error_code!=@record_thrown_code_mysql_unit THEN
+            SIGNAL SQLSTATE '80300';
+         END IF;
       END IF;
-      SET @record_id_mysql_unit             = record_id;
-      SET @record_is_error_mysql_unit       = record_is_error;
-      SET @record_error_code_mysql_unit     = record_error_code;
-      SET @record_arguments_list_mysql_unit = record_arguments_list;
-      SET @record_result_id_mysql_unit      = record_result_id;
-      SET @record_expression_mysql_unit     = CONCAT(record_procedure_name, '(', record_arguments_list, ')');
-      SET @record_value_mysql_unit          = NULL;
-      SET @record_error_text_mysql_unit     = @thrown_message_mysql_unit;
-      SET @record_thrown_code_mysql_unit    = @thrown_code_mysql_unit;
-      
-      -- Error expectation:
-      IF record_is_error XOR CHAR_LENGTH(error) THEN
-         SIGNAL SQLSTATE '80200';
-      END IF;
-      IF record_is_error && CHAR_LENGTH(error) && record_error_code!=@record_thrown_code_mysql_unit THEN
-         SIGNAL SQLSTATE '80300';
-      END IF;
-      -- Normal test run:
-      SET @statement_mysql_unit = CONCAT('SELECT ', record_ref_expression, ' INTO @expression_mysql_unit');
+
+      -- Normal test run.
+      -- If procedure call itself was successfull, re-define
+      -- all data to specific test ref:
+      SET @statement_mysql_unit             = CONCAT('SELECT ', record_ref_expression, ' INTO @expression_mysql_unit');
       PREPARE eval_mysql_unit FROM @statement_mysql_unit;
       EXECUTE eval_mysql_unit;
-      
-      SET record_assertion = ASSERT(@expression_mysql_unit, record_ref_value);
-      SET record_prev_id   = record_id;
+
+      SET @record_expression_mysql_unit     = record_ref_expression;
+      SET @record_value_mysql_unit          = record_ref_value;
+      SET @record_is_error_mysql_unit       = record_ref_is_error;
+      SET @record_error_code_mysql_unit     = record_ref_error_code;
+      SET @record_error_text_mysql_unit     = @thrown_message_mysql_unit;
+      SET @record_thrown_code_mysql_unit    = @thrown_code_mysql_unit;
+      -- Error expectation:
+      IF record_ref_is_error XOR CHAR_LENGTH(error) THEN
+         SIGNAL SQLSTATE '80200';
+      END IF;
+      IF record_ref_is_error && CHAR_LENGTH(error) && record_ref_error_code!=@record_thrown_code_mysql_unit THEN
+         SELECT error, @record_thrown_code_mysql_unit;
+         SIGNAL SQLSTATE '80300';
+      END IF;
+      -- Normal assertion:
+      SET record_assertion                  = ASSERT(@expression_mysql_unit, record_ref_value);
+      SET record_prev_id                    = record_id;
+      SET error                             = '';
    END LOOP;
    CLOSE tests;
 END//

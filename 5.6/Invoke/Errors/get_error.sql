@@ -16,6 +16,7 @@ CREATE PROCEDURE GET_ERROR(
    tested_test_id VARCHAR(255)
 )
 BEGIN
+   -- Assertion failed somewhere
    IF sql_state = '80000' THEN
       CALL GET_FAILURE_FOR_ASSERT(
          test_id,
@@ -32,7 +33,7 @@ BEGIN
          tested_is_verbose
       );
    END IF;
-   -- From checking if it was error mismatch
+   -- From checking if it was error mismatch for expressions
    IF sql_state = '80200' THEN
       CALL GET_FAILURE_FOR_EXCEPTION(
          test_id,
@@ -48,6 +49,19 @@ BEGIN
    -- Error thrown, but code was wrong:
    IF sql_state = '80300' THEN
       CALL GET_FAILURE_FOR_SPECIFIC_CODE(
+         test_id,
+         test_expression,
+         test_value,
+         test_is_error,
+         test_code_expected,
+         test_code_thrown,
+         test_message_thrown,
+         tested_is_verbose
+      );
+   END IF;
+   -- From checking if it was error mismatch for procedures
+   IF sql_state = '80400' THEN
+      CALL GET_FAILURE_FOR_EXPRESSION_EXCEPTION(
          test_id,
          test_expression,
          test_value,

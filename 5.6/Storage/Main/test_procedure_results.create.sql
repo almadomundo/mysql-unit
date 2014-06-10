@@ -7,5 +7,7 @@ CREATE TABLE TEST_PROCEDURE_RESULTS
    `id`              INT(11) UNSIGNED PRIMARY KEY AUTO_INCREMENT,
    `test_id`         INT(11) UNSIGNED, 
    `ref_expression`  VARCHAR(255),
-   `ref_value`       VARCHAR(255)
+   `ref_value`       VARCHAR(255),
+   `ref_is_error`    TINYINT,
+   `ref_error_code`  VARCHAR(255)
 );
