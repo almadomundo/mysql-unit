@@ -74,7 +74,8 @@ BEGIN
          @record_error_text_mysql_unit,
          f,
          d,
-         t
+         t,
+         'PROCEDURE'
       );
       SET error = @thrown_message_mysql_unit;
    END;
@@ -82,6 +83,8 @@ BEGIN
 -- MAIN SECTION
 --
 -- Testing logic should be defined here, only here and nowhere else
+
+   CALL REGISTER_PROCEDURE_VARIABLES();
 
    SELECT COUNT(1) INTO tests_count FROM TEST_PROCEDURE_ASSERTIONS WHERE IF(CHAR_LENGTH(f), procedure_name=f, 1) && IF(CHAR_LENGTH(t), id=t, 1);
    IF !tests_count THEN
@@ -156,5 +159,7 @@ BEGIN
       SET error                             = '';
    END LOOP;
    CLOSE tests;
+
+   CALL RELEASE_PROCEDURE_VARIABLES();
 END//
 DELIMITER ;

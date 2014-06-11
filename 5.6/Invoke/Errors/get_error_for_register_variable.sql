@@ -1,0 +1,9 @@
+-- Get error message for register session variable (State 80600)
+DROP FUNCTION IF EXISTS GET_ERROR_FOR_REGISTER_VARIABLE;
+DELIMITER //
+CREATE FUNCTION GET_ERROR_FOR_REGISTER_VARIABLE()
+RETURNS VARCHAR(255)
+BEGIN
+   RETURN 'Environment integrity check failed';
+END//
+DELIMITER ;

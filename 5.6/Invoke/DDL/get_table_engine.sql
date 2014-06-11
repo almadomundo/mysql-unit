@@ -1,0 +1,10 @@
+-- Get storage-engine comment for TABLE `unit_name` in database `unit_db`
+
+DROP FUNCTION IF EXISTS GET_TABLE_ENGINE;
+DELIMITER //
+CREATE FUNCTION GET_TABLE_ENGINE(unit_db VARCHAR(255), unit_name VARCHAR(255))
+RETURNS VARCHAR(255)
+BEGIN
+   RETURN GET_TABLE_FIELD(unit_db, unit_name, 'ENGINE');
+END//
+DELIMITER ;

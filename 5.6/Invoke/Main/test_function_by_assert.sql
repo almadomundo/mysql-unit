@@ -34,10 +34,14 @@ BEGIN
          @record_error_text_mysql_unit,
          f,
          d,
-         t
+         t,
+         'FUNCTION'
       );
       SET error = @thrown_message_mysql_unit;
    END;
+
+   CALL REGISTER_FUNCTION_VARIABLES();
+
    SELECT COUNT(1) INTO tests_count FROM TEST_FUNCTION_ASSERTIONS WHERE IF(CHAR_LENGTH(f), function_name=f, 1) && IF(CHAR_LENGTH(t), id=t, 1);
    IF !tests_count THEN
       SIGNAL SQLSTATE '80100';
@@ -71,5 +75,7 @@ BEGIN
       SET error            = '';
    END LOOP;
    CLOSE tests;
+
+   CALL RELEASE_FUNCTION_VARIABLES();
 END//
 DELIMITER ;

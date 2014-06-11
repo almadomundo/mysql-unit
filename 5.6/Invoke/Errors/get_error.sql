@@ -13,9 +13,15 @@ CREATE PROCEDURE GET_ERROR(
    test_message_thrown VARCHAR(255),
    tested_entity VARCHAR(255),
    tested_is_verbose INT,
-   tested_test_id VARCHAR(255)
+   tested_test_id VARCHAR(255),
+   tested_origin VARCHAR(255)
 )
 BEGIN
+   -- Important: release variables ONLY if it is not related to
+   -- variables register/release issue. Otherwise env. will be harmed:
+   IF sql_state!='80600' THEN
+      CALL RELEASE_VARIABLES(tested_origin);
+   END IF;
    -- Assertion failed somewhere
    IF sql_state = '80000' THEN
       CALL GET_FAILURE_FOR_ASSERT(
@@ -69,6 +75,13 @@ BEGIN
          test_code_expected,
          test_code_thrown,
          test_message_thrown,
+         tested_is_verbose
+      );
+   END IF;
+   -- Variable register error:
+   IF sql_state = '80600' THEN
+      CALL GET_FAILURE_FOR_REGISTER_VARIABLE(
+         '', 
          tested_is_verbose
       );
    END IF;

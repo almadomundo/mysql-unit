@@ -1,0 +1,10 @@
+-- Get in view `unit_name` in database `unit_db` is updatable
+
+DROP FUNCTION IF EXISTS GET_VIEW_IS_UPDATABLE;
+DELIMITER //
+CREATE FUNCTION GET_VIEW_IS_UPDATABLE(unit_db VARCHAR(255), unit_name VARCHAR(255))
+RETURNS VARCHAR(255)
+BEGIN
+   RETURN GET_VIEW_FIELD(unit_db, unit_name, 'IS_UPDATABLE');
+END//
+DELIMITER ;
