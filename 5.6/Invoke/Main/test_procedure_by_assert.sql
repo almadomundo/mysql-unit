@@ -150,7 +150,6 @@ BEGIN
          SIGNAL SQLSTATE '80200';
       END IF;
       IF record_ref_is_error && CHAR_LENGTH(error) && record_ref_error_code!=@record_thrown_code_mysql_unit THEN
-         SELECT error, @record_thrown_code_mysql_unit;
          SIGNAL SQLSTATE '80300';
       END IF;
       -- Normal assertion:

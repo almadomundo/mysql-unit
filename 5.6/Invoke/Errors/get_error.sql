@@ -19,7 +19,12 @@ CREATE PROCEDURE GET_ERROR(
 BEGIN
    -- Important: release variables ONLY if it is not related to
    -- variables register/release issue. Otherwise env. will be harmed:
-   IF sql_state!='80600' THEN
+   IF sql_state = '80000'
+   || sql_state = '80100'
+   || sql_state = '80200'
+   || sql_state = '80300'
+   || sql_state = '80400'
+   THEN
       CALL RELEASE_VARIABLES(tested_origin);
    END IF;
    -- Assertion failed somewhere
