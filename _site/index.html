@@ -37,7 +37,7 @@
 <p><strong><code>mysql-unit</code></strong> is a framework for testing stored code in MySQL. It will allow you to create &amp; run tests for your code in automatic mode, using simple API. Testing for stored code is important right as it is for regular application code - because stored code also contains logic. If your intention is to write stable and secure stored code - then automated testing for it is mandatory. And that is the purpose of this project.</p>
 
 <h1>
-<a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting started</h1>
+<a name="getting-started" class="anchor" href="#getting-started"><span class="octicon octicon-link"></span></a>Getting Started</h1>
 <p>To start using <strong><code>mysql-unit</code></strong>, you'll need to do basic steps:</p>
 <p><strong>1. Get the source:</strong></p>
 <pre>
@@ -63,6 +63,35 @@ Enter user name, which will execute install scripts: tester
 Enter password for tester :
 </pre>
 <p>That's it. After that you will be able to create your tests and run them. You may also check out <a href='installation.html'>installation page</a> for more details.</p>
+
+<h1>
+<a name="how-it-works" class="anchor" href="#how-it-works"><span class="octicon octicon-link"></span></a>How It Works</h1>
+<p>Since the intention is: to make test runs as simple, as possible, basic check will look like procedure call with specifying only name of tested entity. For example, to do quick test for procedure <strong><code>DUMMY_PROC()</code></strong>, you'll do:</p>
+<pre>
+mysql> CALL TEST_PROCEDURE('dummy_proc');
+ERROR 1644 (80300): Test id < 1 > : expectation of specific ERROR CODE failed.
+</pre>
+<p>And.. that's it. You already have a way to determine, if all was ok or something went wrong. However, you may wish to see, what's going on. Here we go:</p>
+<pre>
+mysql> CALL TEST_PROCEDURE_VERBOSE('dummy_proc');
++---------+--------------------------+------------+---------------+--------------------------+------------------------+-------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| test_id | test_expression          | test_value | test_is_error | test_error_code_expected | test_error_code_thrown | test_error_message_thrown                                                                 | test_trace                                                                                                                                                                                                                                          |
++---------+--------------------------+------------+---------------+--------------------------+------------------------+-------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|       1 | CHECK_DDL_TABLE_EXISTS() | 1          |             1 | 1320                     | 1318                   | Incorrect number of arguments for FUNCTION test.CHECK_DDL_TABLE_EXISTS; expected 2, got 0 | Test id < 1 > : expectation that expression ( CHECK_DDL_TABLE_EXISTS() ) throws ERROR CODE 1320, failed. Actual ERROR CODE thrown is "1318" with message: Incorrect number of arguments for FUNCTION test.CHECK_DDL_TABLE_EXISTS; expected 2, got 0 |
++---------+--------------------------+------------+---------------+--------------------------+------------------------+-------------------------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+1 row in set (0.30 sec)
+
+ERROR 1644 (80300): Test id < 1 > : expectation of specific ERROR CODE failed.
+</pre>
+<p>Lots of fields, right? You can see what does each field means in the <a href='#'>getting tests results page</a>. However, all resulting fields are verbosely named, thus, it's not difficult to figure out what do they mean. Further reading: </p>
+<ul>
+    <li><a href='#'>Test storage structure</a></li>
+    <li><a href='#'>Advanced testing functions usage</a></li>
+    <li><a href='#'>Restrictions on tested entities</a></li>
+    <li><a href='#'>Built-in testing functions</a></li>
+    <li><a href='#'>Writing your own test checkers</a></li>
+</ul>
+
 <h1>
 <a name="supported-features" class="anchor" href="#supported-features"><span class="octicon octicon-link"></span></a>Supported Features</h1>
 
