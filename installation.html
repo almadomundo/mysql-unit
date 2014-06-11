@@ -38,17 +38,23 @@
 
 
 <code>
-user@host:/path/mysql-unit/5.6/Install$ ./install.sh 
-Checking 'mysql' CLI .. ok
-
-Enter database, to which mysql-unit will be installed: test
-Enter user name, which will execute install scripts: root
-Enter password for root :
+user@host:/path/mysql-unit/5.6/Install$ ./install.sh <br/>
+Checking 'mysql' CLI .. ok <br/>
+<br/>
+Enter database, to which mysql-unit will be installed: test <br/>
+Enter user name, which will execute install scripts: tester <br/>
+Enter password for tester : <br/>
 </code>
 
 <p>Here, of course, <strong><code>/path</code></strong> will be full path to your installation folder for <strong><code>mysql-unit</code></strong></p>
 
-      </section>
+<p>Below is a list of SQL permissions that will be required for chosen database:</p>
+<ul>
+    <li><a href='http://dev.mysql.com/doc/refman/5.6/en/privileges-provided.html#priv_select'>SELECT</a> (for each particular entity)</li>
+    <li><a href='http://dev.mysql.com/doc/refman/5.6/en/privileges-provided.html#priv_create-routine'>CREATE ROUTINE</a></li>
+    <li><a href='http://dev.mysql.com/doc/refman/5.6/en/privileges-provided.html#priv_create'>CREATE</a></li>
+</ul>
+</section>
     </div>
 
     <!-- FOOTER  -->
