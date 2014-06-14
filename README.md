@@ -3,7 +3,9 @@ mysql-unit
 
 Testing framework for stored routines in MySQL. Both functions and procedures are supported.
 
+**Documentation**
 
+All documentation pages together with project pages are available at [mysql-unit homepage](http://almadomundo.github.io/mysql-unit/)
 
 **Plans**
  

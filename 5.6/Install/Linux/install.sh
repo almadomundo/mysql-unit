@@ -30,7 +30,7 @@ fi;
 echo ""
 echo "Installing tests storage"
 
-for sqlFile in `ls $DIR/../Storage/Main/*.sql`; do 
+for sqlFile in `ls $DIR/../../Storage/Main/*.sql`; do 
    echo -n "Processing: $sqlFile .. "; 
    if `mysql -u $USERNAME -p$PASSWORD $DATABASE < $sqlFile >/dev/null 2>&1`; then
       echo "ok"
@@ -44,7 +44,7 @@ done
 echo ""
 echo "Installing tests API"
 
-for sqlFile in `ls $DIR/../Invoke/*/*.sql`; do 
+for sqlFile in `ls $DIR/../../Invoke/*/*.sql`; do 
    echo -n "Processing: $sqlFile .. "; 
    if `mysql -u $USERNAME -p$PASSWORD $DATABASE < $sqlFile >/dev/null 2>&1`; then
       echo "ok"
