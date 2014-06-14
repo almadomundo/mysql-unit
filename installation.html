@@ -34,11 +34,14 @@
         <h1>
 <a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h1>
 
-<p>To install <strong><code>mysql-unit</code></strong> all that is needed - is to run installation script from <strong><code>Install</code></strong> folder. You will be prompted to enter database, user name and password. Note, that in order to successfully finish the installation, entered user must have enough permissions to execute installation scripts.</p>
+<p>To install <strong><code>mysql-unit</code></strong> all that is needed - is to run installation script from <strong><code>Install</code></strong> folder for your operation system. You will be prompted to enter database, user name and password. Note, that in order to successfully finish the installation, entered user must have enough permissions to execute installation scripts.</p>
 
+<p><strong>Installation for Linux OS</strong></p>
+
+<p>The corresponding install script is called <strong><code>install.sh</code></strong> and is located in <strong><code>Linux</code></strong> subfolder for installers</p>
 
 <pre>
-user@host:/path/mysql-unit/5.6/Install$ ./install.sh 
+user@host:/path/mysql-unit/5.6/Install/Linux$ ./install.sh 
 Checking 'mysql' CLI .. ok 
 
 Enter database, to which mysql-unit will be installed: test 
@@ -48,12 +51,30 @@ Enter password for tester :
 
 <p>Here, of course, <strong><code>/path</code></strong> will be full path to your installation folder for <strong><code>mysql-unit</code></strong></p>
 
+<p><strong>Installation for Windows</strong></p>
+
+<p>The corresponding install script is called <strong><code>install.bat</code></strong> and is located in <strong><code>Windows</code></strong> subfolder for installers. Note, that Windows installer is a batch file, which means, you will need to execute it from command line.</p>
+<pre>
+c:\path\mysql-unit\5.6\Install\Windows>install.bat
+Checking 'mysql' CLI .. ok
+Enter database, to which mysql-unit will be installed: test
+Enter user name, which will execute install scripts: tester
+Enter password for tester: ********************************
+Checking tester generic access .. ok
+</pre>
+
+<p><strong>Important note:</strong> your <strong><code>mysql</code></strong> CLI executable must present in system <strong><code>PATH</code></strong> variable, otherwise installation will fail. Normally, after installation of MySQL you will be prompted to add the binary to system PATH (so, confirm the option). But if somehow your mysql executable is missing in system path, check the corresponding <a href='http://dev.mysql.com/doc/mysql-windows-excerpt/5.6/en/mysql-installation-windows-path.html'>articles</a> of how to add it there.</p>
+
+<p><strong>Additional notes</strong></p>
+
 <p>Below is a list of SQL permissions that will be required for chosen database:</p>
 <ul>
     <li><a href='http://dev.mysql.com/doc/refman/5.6/en/privileges-provided.html#priv_select'>SELECT</a> (for each particular entity)</li>
     <li><a href='http://dev.mysql.com/doc/refman/5.6/en/privileges-provided.html#priv_create-routine'>CREATE ROUTINE</a></li>
     <li><a href='http://dev.mysql.com/doc/refman/5.6/en/privileges-provided.html#priv_create'>CREATE</a></li>
 </ul>
+
+<p>Also, current version of mysql-unit supports only MySQL 5.6 or above. It won't be checked at start of the installation, but when it will proceed till 5.6-specific SQL commands, installation will fail, if your server version doesn't support them.</p>
 
 <h1><a name="custom-setup" class="anchor" href="#custom-setup"><span class="octicon octicon-link"></span></a>Custom Setup</h1>
 <p>You may wish to install only certain procedure or function. Normally, that will occur if you'll add your own test items and do not want to re-install whole bunch of scripts for framework. All functions and procedures should be stored in <strong><code>.sql</code></strong> files inside <strong><code>Invoke</code></strong> folder. Then, simply run your file normally with mysql CLI:</p>
