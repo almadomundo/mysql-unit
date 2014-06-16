@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="mysql-unit : Testing framework for stored routines in MySQL" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>mysql-unit</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/almadomundo/mysql-unit">View on GitHub</a>
+
+          <a href='/index.html'><h1 id="project_title">mysql-unit</h1></a>
+          <h2 id="project_tagline">Testing framework for stored routines in MySQL</h2>
+          <section>
+              <h3 id="project_menu">
+                  +--------------+---------------+---------+<br/>
+                  | <a class="menu" href='/installation.html'>Installation</a> | <a class="menu" href='/manual.html'><strong>Documentation</strong></a> | <a class="menu" href='/samples.html'>Samples</a> |<br/>
+                  +--------------+---------------+---------+<br/>
+                  1 row in set (0.00 sec)
+                  </h3>
+          </section>
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/almadomundo/mysql-unit/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/almadomundo/mysql-unit/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="writing-tests" class="anchor" href="#writing-tests"><span class="octicon octicon-link"></span></a>Writing tests</h1>
+<p>Before continue reading, make sure that you've read <a href='/api.html#storage-structure'>test storage structure</a> page. In this section there is an overview of how to create your tests with using testing storage. Currently, this could be done only in manual mode (so, by executing usual SQL statements), but in future the corresponding API will be added.</p>
+<a name="existing-sample" class="anchor" href="#existing-sample"><p><strong>Existing sample</strong></p></a>
+<p>In mysql-unit repository, there is a sample tests file, which is called <a href='https://github.com/almadomundo/mysql-unit/blob/master/5.6/Storage/Samples/tests.dummy_proc.sql'><strong><code>tests.dummy_proc.sql</code></strong></a>. It will create some tests for procedure, which is called <strong><code>DUMMY_PROC</code></strong> (if you want, you may check out it's creation sql <a href='https://github.com/almadomundo/mysql-unit/blob/master/5.6/Storage/Samples/dummy_proc.create.sql'>here</a>). Here are comments to that file:</p>
+<pre>
+-- Tests for dummy procedure
+-- dummy_proc should:
+-- 1. Create table in current database with name as passed first argument
+-- 2. Add second argument to created table as a column
+-- 3. Set type of column as third argument
+</pre>
+<p>This is about description of what <strong><code>DUMMY_PROC</code></strong> should do. From that follows, that to write desired tests, we need:</p>
+<ul>
+    <li>Add the record into <strong><code>TEST_PROCEDURE_ASSERTIONS</code></strong> table. If the call is supposed to be error, then add <em><code>is_error</code></em> flag together with expected <em><code>error_code</code></em></li>
+    <li>Add arguments into <strong><code>TEST_PROCEDURE_ARGUMENTS</code></strong> table. Our procedure has three arguments, so that should be three records per one test in that table</li>
+    <li>Finally, add some checks into <strong><code>TEST_PROCEDURE_RESULTS</code></strong> table. That may be custom expressions, DDL checks e t.c.</li>
+</ul>
+<p>In the file, that linked above, there is only one test for procedure <strong><code>DUMMY_PROC</code></strong>. Let's see what it is:</p>
+<p><strong>1.</strong> First thing to do. We just adding the record to main table, which tells: "This is a record for testing procedure 'dummy_proc' and this call should not throw any error".</p>
+<pre>
+INSERT INTO TEST_PROCEDURE_ASSERTIONS
+(`procedure_name`, `is_error`, `error_code`)
+VaLUES
+('dummy_proc', 0, NULL);
+</pre>
+<p><strong>2.</strong> We need to capture, what is our <em><code>id</code></em>, because it will be referenced from child tables. Also, because of DDL checks, we're setting database for them:</p>
+<pre>
+SET @test_id_tmp_mysql_unit:=LAST_INSERT_ID();
+SET @test_db_tmp_mysql_unit:=DATABASE();
+</pre>
+<p><strong>3.</strong> Next, our procedure call should have some arguments. The statement below corresponds call: <strong><code>CALL DUMMY_PROC("foo", "bar", "VARCHAR(255)")</code></strong>:</p>
+INSERT INTO TEST_PROCEDURE_ARGUMENTS
+(`test_id`, `argument_value`)
+VALUES
+(@test_id_tmp_mysql_unit, '"foo"'),
+(@test_id_tmp_mysql_unit, '"bar"'),
+(@test_id_tmp_mysql_unit, '"VARCHAR(255)"');
+<p><strong>4.</strong> Finally, we want to add a check, if our table was created and check that created table has the corresponding column:</p>
+<pre>
+INSERT INTO TEST_PROCEDURE_RESULTS
+(`test_id`, `ref_expression`, `ref_value`, `ref_is_error`, `ref_error_code`)
+VALUES
+(@test_id_tmp_mysql_unit, 'CHECK_DDL_TABLE_EXISTS()', 1, 1, '1318'),
+(@test_id_tmp_mysql_unit, 'CHECK_DDL_COLUMN_EXISTS("", "foo", "bar")', 1, 0, NULL);
+</pre>
+<p><em>What will actually happen, when test procedure will run</em></p>
+<p>Well, here we are:</p>
+</section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">mysql-unit maintained by <a href="https://github.com/almadomundo">almadomundo</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="mysql-unit : Testing framework for stored routines in MySQL" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>mysql-unit</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/almadomundo/mysql-unit">View on GitHub</a>
+
+          <a href='/index.html'><h1 id="project_title">mysql-unit</h1></a>
+          <h2 id="project_tagline">Testing framework for stored routines in MySQL</h2>
+          <section>
+              <h3 id="project_menu">
+                  +--------------+---------------+---------+<br/>
+                  | <a class="menu" href='/installation.html'>Installation</a> | <a class="menu" href='/manual.html'><strong>Documentation</strong></a> | <a class="menu" href='/samples.html'>Samples</a> |<br/>
+                  +--------------+---------------+---------+<br/>
+                  1 row in set (0.00 sec)
+                  </h3>
+          </section>
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/almadomundo/mysql-unit/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/almadomundo/mysql-unit/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+<h1>
+<a name="api" class="anchor" href="#api"><span class="octicon octicon-link"></span></a>Common concept</h1>
+<p>To run tests, two things are needed. First, some place where tests data - such as testing expressions, their expected results e t.c. - is stored. Second thing is API, which will use that data and produce all checks which that data describes. This page contains explanation for both those things - how testing storage is organized and what API is provided by <strong><code>mysql-unit</code></strong> to produce test checks.</p>
+<p>First thing to say about testing storage: it is stored in database. That means, during installation, all needed tables will be created, and in order to run tests, those tables should be used. So, you will have to know the structure of testing storage if you want to add tests there manually. <em>(Currently, manual tests storage managing is the only way, but in future, the corresponding API will be added)</em></p>
+<p>Next, all testing API in front is a call of MySQL procedure. That means - you'll use <strong><code>CALL</code></strong> to invoke them. Also, testing procedures will run till first failure. So, if failure happened, testing procedure will stop and display some information about - what had failed and why.</p>
+<h1>
+<a name="storage-structure" class="anchor" href="#storage-structure"><span class="octicon octicon-link"></span></a>Testing storage structure</h1>
+<p>Storage for tests contains two parts: for functions testing and for procedure testing. There are differences in them, because procedures testing is much more complicated: inside procedures we can do DDL changes, other procedures calls, e.t.c. - thus, procedure testing part should handle all those things.</p>
+<p>All storage tables are in upper case and starts with <strong><code>TEST_</code></strong> prefix. Be careful - depending from OS your server may be sensitive or not to table names case. Since installation process contains <strong><code>DROP TABLE IF EXISTS</code></strong> statement, you should be aware about case-sensitivity, if your installation database already contains tables with such names, but in different case.</p>
+<a name="storage-structure-functions" class="anchor" href="#storage-structure-functions"><p><strong>Functions testing storage</strong></p></a>
+<p>Storage for functions testing is represented by one single table. It's named <strong><code>TEST_FUNCTION_ASSERTIONS</code></strong>. Below is it's common structure:</p>
+<p><img src='/images/uml_functions.png'/></p>
+<p>Description for each field is:</p>
+<ul>
+    <li><strong><code>id</code></strong> <br/> Primary key. This identifier will be included into failure result, if the corresponding test derived that failure</li>
+    <li><strong><code>function_name</code></strong> <br/> Name of function, which should be tested of this test. Note, that it has nothing common with <em><code>expression</code></em> field. This field is sort of group identifier. When testing procedure is invoked, the name of tested function will passed to it, and this field will be checked if it matches that tested function name.</li>
+    <li><strong><code>expression</code></strong> <br/> The expression, that will be evaluated when test will be run. It may contain any valid SQL expression or even subqueries (if they return one row). However, if upper level is a <code>SELECT</code> statement, then whole expression should be enclosed in parenthesis.</li>
+    <li><strong><code>value</code></strong> <br/> The value, which should be a result of the <em><code>expression</code></em> evaluation. If test supposed to be non-error, then equality of that result and this field means that test passed.</li>
+    <li><strong><code>is_error</code></strong> <br/> Flag, which indicates if this test should throw SQL error. If this flag is set, then test will pass if it throws error with code, which is <em><code>error_code</code></em>. If test didn't throw error or thrown error with another code, then test will fail.</li>
+    <li><strong><code>error_code</code></strong> <br/> Applicable if <em><code>is_error</code></em> flag is set. Specified expected error code for this test. If <em><code>is_error</code></em> is not set, then this field will be ignored.</li>
+</ul>
+<a name="storage-structure-procedures" class="anchor" href="#storage-structure-procedures"><p><strong>Procedures testing storage</strong></p></a>
+<p>Storage for procedures testing is more complicated and consists of several tables. The model of testing is now not just iterate through all matched rows, but also to check multiple expressions for each test. Arguments list is also separated - that is because procedure call is not just a usual expression. Tables for this storage part: </p>
+<ul>
+    <li><strong><code>TEST_PROCEDURE_ASSERTIONS</code></strong> <br/> Main table, which contains procedures tests. It is a parent table and contains only generic procedure-specific fields.</li>
+    <li><strong><code>TEST_PROCEDURE_ARGUMENTS</code></strong> <br/> Table, which holds arguments for each test.</li>
+    <li><strong><code>TEST_PROCEDURE_RESULTS</code></strong> <br/> Results of procedure call. One procedure may do many things, so that is why for testing it many expressions are also needed.</li>
+</ul>
+<p>Below is a diagram that illustrates relations between those tables:</p>
+<p><img src='/images/uml_procedures.png'/></p>
+<p>As it was done for functions part, here is a description for each field of each table:</p>
+<ul>
+    <li>
+        <strong><code>TEST_PROCEDURE_ASSERTIONS</code></strong><br/>
+        <ul>
+            <li><strong><code>id</code></strong> <br/> Primary key. This identifier will be included into failure result, if the corresponding test derived that failure. Note, that there is a difference with function testing. This identifier will be included into failure result only if the failure was caused by procedure call itself and not by test check, which was made in order to make sure that test passed. The model is: run procedure, then, if call was successful, run tests to check if procedure results match expectations.<br/>
+            <li><strong><code>procedure_name</code></strong> <br/> Name of procedure, which should be tested. This is a group identifier for group of tests for that procedure.</li>
+            <li><strong><code>is_error</code></strong> <br/> Flag, which indicates if this procedure call should throw SQL error. If this flag is set, then test will pass if it throws error with code, which is <em><code>error_code</code></em>. If test didn't throw error or thrown error with another code, then test will fail.</li>
+            <li><strong><code>error_code</code></strong> <br/> Applicable if <em><code>is_error</code></em> flag is set. Specified expected error code for this test. If <em><code>is_error</code></em> is not set, then this field will be ignored.</li>
+        </ul>
+    </li>
+    <li>
+        <strong><code>TEST_PROCEDURE_ARGUMENTS</code></strong><br/>
+        <ul>
+            <li><strong><code>id</code></strong> <br/> Primary key of the table. Will not appear anywhere if all is well.</li>
+            <li><strong><code>test_id</code></strong> <br/> Identifier of the corresponding test from <em><code>TEST_PROCEDURE_ASSERTIONS</code></em></li>
+            <li><strong><code>argument_value</code></strong> <br/> A value of argument that will be passed, when invoking a procedure for corresponding <em><code>test_id</code></em>. String values must be placed <strong>with quotes</strong>, otherwise they will be treated as SQL tokens.</li>
+            <li><strong><code>argument_type</code></strong> <br/> Currently, all types are just strings (VARCHAR in terms of MySQL) and this field is unused.</li>
+        </ul>
+    </li>
+    <li>
+        <strong><code>TEST_PROCEDURE_RESULTS</code></strong> <br/>
+        <ul>
+            <li><strong><code>id</code></strong> <br/> Primary key of the table. If procedure call was successful, but the <em><code>ref_expression</code></em> check failed after that, then this identifier will override identifier from parent table in failure result.</li>
+            <li><strong><code>test_id</code></strong> <br/> Identifier of the corresponding test from <em><code>TEST_PROCEDURE_ASSERTIONS</code></em></li>
+            <li><strong><code>ref_expression</code></strong> <br/> The expression, that will be evaluated when test will be run. It may contain any valid SQL expression or even subqueries (if they return one row). However, if upper level is a <code>SELECT</code> statement, then whole expression should be enclosed in parenthesis.</li>
+            <li><strong><code>ref_value</code></strong> <br/> The value, which should be a result of the <em><code>ref_expression</code></em> evaluation. If test supposed to be non-error, then equality of that result and this field means that test passed.</li>
+            <li><strong><code>ref_is_error</code></strong> <br/> Flag, which indicates if this check should throw SQL error. If this flag is set, then test will pass if it throws error with code, which is <em><code>ref_error_code</code></em>. If test didn't throw error or thrown error with another code, then test will fail.</li>
+            <li><strong><code>ref_error_code</code></strong> <br/> Applicable if <em><code>is_error</code></em> flag is set. Specified expected error code for this test. If <em><code>ref_is_error</code></em> is not set, then this field will be ignored.</li>
+        </ul>
+    </li>
+</ul>
+<h1>
+<a name="testing-api" class="anchor" href="#testing-api"><span class="octicon octicon-link"></span></a>Testing API</h1>
+<p>As it was already said, testing API is always a procedure call. Procedure call result is SQL error code with some message or successful execution result. Also, if some test failed, it is possible to include failure description as a row set into result. This is useful, because external driver may capture both error and result set by single call.</p>
+<a name="testing-api-front" class="anchor" href="#testing-api-front"><p><strong>Front API</strong></p></a>
+<p>There are basic wrappers for testing procedures, which are provided by framework. They are:</p>
+<ul>
+    <li><strong><code>TEST_FUNCTION</code></strong> <br/>Has one parameter, tested function name. Do all tests for specified function by name and show error result if there was a fail or success result if all tests passed.</li>
+    <li><strong><code>TEST_FUNCTION_VERBOSE</code></strong> <br/>Has one parameter, tested function name. Do all tests for specified function by name and show error result together with error trace row set if there was a fail or success result if all tests passed.</li>
+    <li><strong><code>TEST_PROCEDURE</code></strong> <br/>Has one parameter, tested procedure name. Do all tests for specified procedure by name and show error result if there was a fail or success result if all tests passed.</li>
+    <li><strong><code>TEST_PROCEDURE_VERBOSE</code></strong> <br/>Has one parameter, tested procedure name. Do all tests for specified procedure by name and show error result together with error trace row set if there was a fail or success result if all tests passed.</li>
+</ul>
+<p>So, all front-API procedures have only one parameter, tested entity name. They are called "front-API" because they are just wrappers for main testing procedures. This procedures are easy to use, and, normally, they are enough to produce all desired testing results.</p>
+<a name="testing-api-main" class="anchor" href="#testing-api-main"><p><strong>General API</strong></p></a>
+<p>However, under the hood of front-API procedures, there are two generic testing procedures, which will do all the work. They may be used to do custom test run (by test identifier), and, of course, as a replacement for front-API:</p>
+<ul>
+    <li>
+        <strong><code>TEST_FUNCTION_BY_ASSERT</code></strong> <br/>Has three parameters:
+        <ul>
+            <li><strong>Function name</strong>. The name of function that has to be tested
+            <li><strong>Flag for verbose output</strong>. If set, then, in case of failure, procedure will also return row set with trace of test failure.</li>
+            <li><strong>Test id</strong>. Identifier for test. If is not an empty string, then only test by specific identifier will be run.
+        </ul>
+    </li>
+    <li>
+        <strong><code>TEST_PROCEDURE_BY_ASSERT</code></strong> <br/>Has three parameters:
+        <ul>
+            <li><strong>Procedure name</strong>. The name of procedure that has to be tested
+            <li><strong>Flag for verbose output</strong>. If set, then, in case of failure, procedure will also return row set with trace of test failure.</li>
+            <li><strong>Test id</strong>. Identifier for test. If is not an empty string, then only test by specific identifier will be run.
+        </ul>
+    </li>
+    
+</ul>
+</section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">mysql-unit maintained by <a href="https://github.com/almadomundo">almadomundo</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>

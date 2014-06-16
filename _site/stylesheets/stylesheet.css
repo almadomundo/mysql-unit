@@ -269,6 +269,14 @@ Full-Width Styles
   margin: 0 auto;
 }
 
+.menu {
+  text-decoration: none;
+  color: #fff;
+  font-weight: 300;
+  background: none;
+  text-shadow: #111 0px 0px 10px;
+}
+
 #forkme_banner {
   display: block;
   position: absolute;
@@ -311,6 +319,16 @@ Full-Width Styles
   font-weight: 300;
   background: none;
   text-shadow: #111 0px 0px 10px;
+}
+
+#project_menu {
+  font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 300;
+  background: #0090ff;
+  text-shadow: #111 0px 0px 10px;
+  padding: 10px 10px 10px 10px;
 }
 
 #downloads {

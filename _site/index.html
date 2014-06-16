@@ -18,9 +18,16 @@
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/almadomundo/mysql-unit">View on GitHub</a>
 
-          <h1 id="project_title">mysql-unit</h1>
+          <a href='/index.html'><h1 id="project_title">mysql-unit</h1></a>
           <h2 id="project_tagline">Testing framework for stored routines in MySQL</h2>
-
+          <section>
+              <h3 id="project_menu">
+                  +--------------+---------------+---------+<br/>
+                  | <a class="menu" href='/installation.html'>Installation</a> | <a class="menu" href='/manual.html'>Documentation</a> | <a class="menu" href='/samples.html'>Samples</a> |<br/>
+                  +--------------+---------------+---------+<br/>
+                  1 row in set (0.00 sec)
+                  </h3>
+          </section>
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/almadomundo/mysql-unit/zipball/master">Download this project as a .zip file</a>
               <a class="tar_download_link" href="https://github.com/almadomundo/mysql-unit/tarball/master">Download this project as a tar.gz file</a>
@@ -51,18 +58,18 @@ Resolving deltas: 100% (86/86), done.
 </pre>
 <p><strong>2. Go to installation folder:</strong></p>
 <pre>
-user@host:/path$ cd mysql-unit/5.6/Install
+user@host:/path$ cd mysql-unit/5.6/Install/Linux
 </pre>
 <p><strong>3. Run installation script:</strong></p>
 <pre>
-user@host:/path/mysql-unit/5.6/Install$ ./install.sh 
+user@host:/path/mysql-unit/5.6/Install/Linux$ ./install.sh 
 Checking 'mysql' CLI .. ok
 
 Enter database, to which mysql-unit will be installed: test
 Enter user name, which will execute install scripts: tester
 Enter password for tester :
 </pre>
-<p>That's it. After that you will be able to create your tests and run them. You may also check out <a href='installation.html'>installation page</a> for more details.</p>
+<p>That's it. After that you will be able to create your tests and run them. You may also check out <a href='installation.html'>installation page</a> for more details - for example, if you are using Windows.</p>
 
 <h1>
 <a name="how-it-works" class="anchor" href="#how-it-works"><span class="octicon octicon-link"></span></a>How It Works</h1>
@@ -85,8 +92,8 @@ ERROR 1644 (80300): Test id < 1 > : expectation of specific ERROR CODE failed.
 </pre>
 <p>Lots of fields, right? You can see what does each field means in the <a href='#'>getting tests results page</a>. However, all resulting fields are verbosely named, thus, it's not difficult to figure out what do they mean. Further reading: </p>
 <ul>
-    <li><a href='#'>Test storage structure</a></li>
-    <li><a href='#'>Advanced testing functions usage</a></li>
+    <li><a href='/api.html#storage-structure'>Test storage structure</a></li>
+    <li><a href='/api.html#testing-api-main'>Advanced testing functions usage</a></li>
     <li><a href='#'>Restrictions on tested entities</a></li>
     <li><a href='#'>Built-in testing functions</a></li>
     <li><a href='#'>Writing your own test checkers</a></li>

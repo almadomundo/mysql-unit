@@ -18,9 +18,16 @@
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/almadomundo/mysql-unit">View on GitHub</a>
 
-          <h1 id="project_title">mysql-unit</h1>
+          <a href='/index.html'><h1 id="project_title">mysql-unit</h1></a>
           <h2 id="project_tagline">Testing framework for stored routines in MySQL</h2>
-
+          <section>
+              <h3 id="project_menu">
+                  +--------------+---------------+---------+<br/>
+                  | <a class="menu" href='/installation.html'><strong>Installation</strong></a> | <a class="menu" href='/manual.html'>Documentation</a> | <a class="menu" href='/samples.html'>Samples</a> |<br/>
+                  +--------------+---------------+---------+<br/>
+                  1 row in set (0.00 sec)
+                  </h3>
+          </section>
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/almadomundo/mysql-unit/zipball/master">Download this project as a .zip file</a>
               <a class="tar_download_link" href="https://github.com/almadomundo/mysql-unit/tarball/master">Download this project as a tar.gz file</a>
@@ -36,7 +43,7 @@
 
 <p>To install <strong><code>mysql-unit</code></strong> all that is needed - is to run installation script from <strong><code>Install</code></strong> folder for your operation system. You will be prompted to enter database, user name and password. Note, that in order to successfully finish the installation, entered user must have enough permissions to execute installation scripts.</p>
 
-<p><strong>Installation for Linux OS</strong></p>
+<a name="installation-linux" class="anchor" href="#installation-linux"><p><strong>Installation for Linux OS</strong></p></a>
 
 <p>The corresponding install script is called <strong><code>install.sh</code></strong> and is located in <strong><code>Linux</code></strong> subfolder for installers</p>
 
@@ -51,7 +58,7 @@ Enter password for tester :
 
 <p>Here, of course, <strong><code>/path</code></strong> will be full path to your installation folder for <strong><code>mysql-unit</code></strong></p>
 
-<p><strong>Installation for Windows</strong></p>
+<a name="installation-windows" class="anchor" href="#installation-windows"><p><strong>Installation for Windows</strong></p></a>
 
 <p>The corresponding install script is called <strong><code>install.bat</code></strong> and is located in <strong><code>Windows</code></strong> subfolder for installers. Note, that Windows installer is a batch file, which means, you will need to execute it from command line.</p>
 <pre>
@@ -65,7 +72,7 @@ Checking tester generic access .. ok
 
 <p><strong>Important note:</strong> your <strong><code>mysql</code></strong> CLI executable must present in system <strong><code>PATH</code></strong> variable, otherwise installation will fail. Normally, after installation of MySQL you will be prompted to add the binary to system PATH (so, confirm the option). But if somehow your mysql executable is missing in system path, check the corresponding <a href='http://dev.mysql.com/doc/mysql-windows-excerpt/5.6/en/mysql-installation-windows-path.html'>articles</a> of how to add it there.</p>
 
-<p><strong>Additional notes</strong></p>
+<a name="installation-restrictions" class="anchor" href="#installation-restrictions"><p><strong>Additional notes & requirements</strong></p></a>
 
 <p>Below is a list of SQL permissions that will be required for chosen database:</p>
 <ul>
