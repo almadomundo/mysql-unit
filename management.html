@@ -98,28 +98,48 @@ Query OK, 0 rows affected (0.46 sec)
 </ul>
 <a name="functions-tests" class="anchor" href="#functions-tests"><p><strong>Writing tests for functions</strong></p></a>
 <p>Function tests are easy, because they affect only one table, <strong><code>TEST_FUNCTION_ASSERTIONS</code></strong>. So writing tests for functions is nothing more than just executing <em><code>INSERT</code></em> statements on that table. Let's test mysql built-in function <em><code>DATABASE()</code></em>. Our current database is "test", so:</p>
-<p><strong>1.</strong>Simple success test:</p>
+<p><strong>1.</strong> Simple success test:</p>
 <pre>
 INSERT INTO TEST_FUNCTION_ASSERTIONS 
 (`function_name`, `expression`, `value`, `is_error`, `error_code`) 
 VALUES 
 ('DATABASE', 'DATABASE()', 'test', 0, NULL);
 </pre>
-<p><strong>2.</strong>More complicated expression:</p>
+<p><strong>2.</strong> More complicated expression:</p>
 <pre>
 INSERT INTO TEST_FUNCTION_ASSERTIONS 
 (`function_name`, `expression`, `value`, `is_error`, `error_code`) 
 VALUES 
 ('DATABASE', 'CONCAT(CHAR(73), " am ", DATABASE(), "er") REGEXP "^I"', '1', 0, NULL);
 </pre>
-<p><strong>3.</strong>And invalid expression:</p>
+<p><strong>3.</strong> And invalid expression:</p>
 <pre>
 INSERT INTO TEST_FUNCTION_ASSERTIONS 
 (`function_name`, `expression`, `value`, `is_error`, `error_code`) 
 VALUES 
 ('DATABASE', 'DATABASE("foo")', '', 1, "1064");
 </pre>
-<p>That's it for now, run our tests:</p>
+<p><em>That's it for now, run our tests:</em></p>
+<pre>
+mysql> CALL TEST_FUNCTION('DATABASE');
+ERROR 1644 (80300): Test id < 3 > : expectation of specific ERROR CODE failed.
+</pre>
+<p>Wait, what? This seems like something weird happened. Look here:</p>
+<pre>
+mysql> SELECT DATABASE('foo');
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''foo')' at line 1
+</pre>
+<p>This clearly states that error is "1064", which we specified on third step. This is a bug in mysql-unit! Actually - it isn't. To understand, what is wrong, we first should check testing trace:</p>
+<pre>
+mysql> CALL TEST_FUNCTION_VERBOSE('DATABASE');
++---------+-----------------+------------+---------------+--------------------------+------------------------+-----------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| test_id | test_expression | test_value | test_is_error | test_error_code_expected | test_error_code_thrown | test_error_message_thrown                                             | test_trace                                                                                                                                                                                                             |
++---------+-----------------+------------+---------------+--------------------------+------------------------+-----------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|       3 | DATABASE("foo") |            |             1 | 1064                     | 1243                   | Unknown prepared statement handler (eval_mysql_unit) given to EXECUTE | Test id < 3 > : expectation that expression ( DATABASE("foo") ) throws ERROR CODE 1064, failed. Actual ERROR CODE thrown is "1243" with message: Unknown prepared statement handler (eval_mysql_unit) given to EXECUTE |
++---------+-----------------+------------+---------------+--------------------------+------------------------+-----------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+</pre>
+<p>So, that's it. We've faced one of restrictions for mysql-unit. It uses prepared statements to evaluate dynamic SQL in expression, and they will fail if the SQL contains syntax errors. I.e.: preparation of statement will fail, then unknown statement handler will be passed to execution and then error 1243 will occur. In this section, it's just a brief overview of this corner case, but mysql-unit has such restrictions, you can check them on the <a href='/restrictions.html'>restrictions</a> page. The outcome here is: testing built-in MySQL functions in general is a bad idea.</p>
+<p><strong>4.</strong> Ok, fix the "error":</p>
 </section>
     </div>
 

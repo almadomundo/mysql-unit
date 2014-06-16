@@ -41,7 +41,7 @@
         <h1>
 <a name="writing-tests" class="anchor" href="#writing-tests"><span class="octicon octicon-link"></span></a>Writing tests</h1>
 <p>Before continue reading, make sure that you've read <a href='/api.html#storage-structure'>test storage structure</a> page. In this section there is an overview of how to create your tests with using testing storage. Currently, this could be done only in manual mode (so, by executing usual SQL statements), but in future the corresponding API will be added.</p>
-<a name="existing-sample" class="anchor" href="#existing-sample"><p><strong>Existing sample</strong></p></a>
+<a name="procedures-tests" class="anchor" href="#procedures-tests"><p><strong>Procedures tests</strong></p></a>
 <p>In mysql-unit repository, there is a sample tests file, which is called <a href='https://github.com/almadomundo/mysql-unit/blob/master/5.6/Storage/Samples/tests.dummy_proc.sql'><strong><code>tests.dummy_proc.sql</code></strong></a>. It will create some tests for procedure, which is called <strong><code>DUMMY_PROC</code></strong> (if you want, you may check out it's creation sql <a href='https://github.com/almadomundo/mysql-unit/blob/master/5.6/Storage/Samples/dummy_proc.create.sql'>here</a>). Here are comments to that file:</p>
 <pre>
 -- Tests for dummy procedure
@@ -68,7 +68,7 @@ VaLUES
 <pre>
 SET @test_id_tmp_mysql_unit:=LAST_INSERT_ID();
 </pre>
-<p><strong>3.</strong> Next, our procedure call should have some arguments. The statement below corresponds call: <strong><code>CALL DUMMY_PROC("foo", "bar", "VARCHAR(255)")</code></strong>:</p>
+<p><strong>3.</strong> Next, our procedure call should have some arguments. The statement below corresponds to call: <strong><code>CALL DUMMY_PROC("foo", "bar", "VARCHAR(255)")</code></strong>:</p>
 <pre>
 INSERT INTO TEST_PROCEDURE_ARGUMENTS
 (`test_id`, `argument_value`)
@@ -85,7 +85,7 @@ VALUES
 (@test_id_tmp_mysql_unit, 'CHECK_DDL_TABLE_EXISTS()', 1, 1, '1318'),
 (@test_id_tmp_mysql_unit, 'CHECK_DDL_COLUMN_EXISTS("", "foo", "bar")', 1, 0, NULL);
 </pre>
-<p><em>What will actually happen, when test procedure will run</em></p>
+<p><em>What will actually happen, when test procedure will run:</em></p>
 <p>Well, here we are:</p>
 <pre>
 mysql> CALL TEST_PROCEDURE_VERBOSE('dummy_proc');
@@ -96,6 +96,49 @@ Query OK, 0 rows affected (0.46 sec)
     <li>First expression is incorrect, because <em><code>CHECK_DDL_TABLE_EXISTS</code></em> expects 3 parameters (check the corresponding manual page). However, our check has <em><code>is_error</code></em> flag set together with proper <em><code>error_code</code></em> (which is 1318 for this exception)</li>
     <li>Second expression is correct. Since our call was successful (we've passed correct arguments), the table was created and the column in it too. Therefore, test passed, and, since it's the last test and last check for our procedure, the system returned success tests passing result.</li>
 </ul>
+<a name="functions-tests" class="anchor" href="#functions-tests"><p><strong>Writing tests for functions</strong></p></a>
+<p>Function tests are easy, because they affect only one table, <strong><code>TEST_FUNCTION_ASSERTIONS</code></strong>. So writing tests for functions is nothing more than just executing <em><code>INSERT</code></em> statements on that table. Let's test mysql built-in function <em><code>DATABASE()</code></em>. Our current database is "test", so:</p>
+<p><strong>1.</strong>Simple success test:</p>
+<pre>
+INSERT INTO TEST_FUNCTION_ASSERTIONS 
+(`function_name`, `expression`, `value`, `is_error`, `error_code`) 
+VALUES 
+('DATABASE', 'DATABASE()', 'test', 0, NULL);
+</pre>
+<p><strong>2.</strong>More complicated expression:</p>
+<pre>
+INSERT INTO TEST_FUNCTION_ASSERTIONS 
+(`function_name`, `expression`, `value`, `is_error`, `error_code`) 
+VALUES 
+('DATABASE', 'CONCAT(CHAR(73), " am ", DATABASE(), "er") REGEXP "^I"', '1', 0, NULL);
+</pre>
+<p><strong>3.</strong>And invalid expression:</p>
+<pre>
+INSERT INTO TEST_FUNCTION_ASSERTIONS 
+(`function_name`, `expression`, `value`, `is_error`, `error_code`) 
+VALUES 
+('DATABASE', 'DATABASE("foo")', '', 1, "1064");
+</pre>
+<p><em>That's it for now, run our tests:</em></p>
+<pre>
+mysql> CALL TEST_FUNCTION('DATABASE');
+ERROR 1644 (80300): Test id < 3 > : expectation of specific ERROR CODE failed.
+</pre>
+<p>Wait, what? This seems like something weird happened. Look here:</p>
+<pre>
+mysql> SELECT DATABASE('foo');
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''foo')' at line 1
+</pre>
+<p>This clearly states that error is "1064", which we specified on third step. This is a bug in mysql-unit! Actually - it isn't. To understand, what is wrong, we first should check testing trace:</p>
+<pre>
+mysql> CALL TEST_FUNCTION_VERBOSE('DATABASE');
++---------+-----------------+------------+---------------+--------------------------+------------------------+-----------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| test_id | test_expression | test_value | test_is_error | test_error_code_expected | test_error_code_thrown | test_error_message_thrown                                             | test_trace                                                                                                                                                                                                             |
++---------+-----------------+------------+---------------+--------------------------+------------------------+-----------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|       3 | DATABASE("foo") |            |             1 | 1064                     | 1243                   | Unknown prepared statement handler (eval_mysql_unit) given to EXECUTE | Test id < 3 > : expectation that expression ( DATABASE("foo") ) throws ERROR CODE 1064, failed. Actual ERROR CODE thrown is "1243" with message: Unknown prepared statement handler (eval_mysql_unit) given to EXECUTE |
++---------+-----------------+------------+---------------+--------------------------+------------------------+-----------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+</pre>
+<p>So, that's it. We've faced one of restrictions for mysql-unit. It uses prepared statements to evaluate dynamic SQL in expression, and they will fail if the SQL contains syntax errors. I.e.: preparation of statement will fail, then unknown statement handler will be passed to execution and then error 1243 will occur. In this section, it's just a brief overview of this corner case, but mysql-unit has such restrictions, you can check them on the <a href='/restrictions.html'>restrictions</a> page. The outcome here is: testing built-id MySQL functions in general is a bad idea.</p>
 </section>
     </div>
 
