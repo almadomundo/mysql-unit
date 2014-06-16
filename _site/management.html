@@ -18,7 +18,7 @@
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/almadomundo/mysql-unit">View on GitHub</a>
 
-          <a href='/index.html'><h1 id="project_title">mysql-unit</h1></a>
+          <a href="index.html"><h1 id="project_title">mysql-unit</h1></a>
           <h2 id="project_tagline">Testing framework for stored routines in MySQL</h2>
           <section>
               <h3 id="project_menu">
@@ -98,21 +98,21 @@ Query OK, 0 rows affected (0.46 sec)
 </ul>
 <a name="functions-tests" class="anchor" href="#functions-tests"><p><strong>Writing tests for functions</strong></p></a>
 <p>Function tests are easy, because they affect only one table, <strong><code>TEST_FUNCTION_ASSERTIONS</code></strong>. So writing tests for functions is nothing more than just executing <em><code>INSERT</code></em> statements on that table. Let's test mysql built-in function <em><code>DATABASE()</code></em>. Our current database is "test", so:</p>
-<p><strong>1.</strong>Simple success test:</p>
+<p><strong>1.</strong> Simple success test:</p>
 <pre>
 INSERT INTO TEST_FUNCTION_ASSERTIONS 
 (`function_name`, `expression`, `value`, `is_error`, `error_code`) 
 VALUES 
 ('DATABASE', 'DATABASE()', 'test', 0, NULL);
 </pre>
-<p><strong>2.</strong>More complicated expression:</p>
+<p><strong>2.</strong> More complicated expression:</p>
 <pre>
 INSERT INTO TEST_FUNCTION_ASSERTIONS 
 (`function_name`, `expression`, `value`, `is_error`, `error_code`) 
 VALUES 
 ('DATABASE', 'CONCAT(CHAR(73), " am ", DATABASE(), "er") REGEXP "^I"', '1', 0, NULL);
 </pre>
-<p><strong>3.</strong>And invalid expression:</p>
+<p><strong>3.</strong> And invalid expression:</p>
 <pre>
 INSERT INTO TEST_FUNCTION_ASSERTIONS 
 (`function_name`, `expression`, `value`, `is_error`, `error_code`) 
@@ -138,7 +138,19 @@ mysql> CALL TEST_FUNCTION_VERBOSE('DATABASE');
 |       3 | DATABASE("foo") |            |             1 | 1064                     | 1243                   | Unknown prepared statement handler (eval_mysql_unit) given to EXECUTE | Test id < 3 > : expectation that expression ( DATABASE("foo") ) throws ERROR CODE 1064, failed. Actual ERROR CODE thrown is "1243" with message: Unknown prepared statement handler (eval_mysql_unit) given to EXECUTE |
 +---------+-----------------+------------+---------------+--------------------------+------------------------+-----------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 </pre>
-<p>So, that's it. We've faced one of restrictions for mysql-unit. It uses prepared statements to evaluate dynamic SQL in expression, and they will fail if the SQL contains syntax errors. I.e.: preparation of statement will fail, then unknown statement handler will be passed to execution and then error 1243 will occur. In this section, it's just a brief overview of this corner case, but mysql-unit has such restrictions, you can check them on the <a href='/restrictions.html'>restrictions</a> page. The outcome here is: testing built-id MySQL functions in general is a bad idea.</p>
+<p>So, that's it. We've faced one of restrictions for mysql-unit. It uses prepared statements to evaluate dynamic SQL in expression, and they will fail if the SQL contains syntax errors. I.e.: preparation of statement will fail, then unknown statement handler will be passed to execution and then error 1243 will occur. In this section, it's just a brief overview of this corner case, but mysql-unit has such restrictions, you can check them on the <a href="restrictions.html">restrictions</a> page. The outcome here is: testing built-in MySQL functions in general is a bad idea.</p>
+<p><strong>4.</strong> Ok, fix the "error":</p>
+<pre>
+mysql> UPDATE TEST_FUNCTION_ASSERTIONS SET error_code='1243' WHERE id=3;
+Query OK, 1 row affected (0.05 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+</pre>
+<p><em>Now, run tests:</em></p>
+<pre>
+mysql> CALL TEST_FUNCTION_VERBOSE('DATABASE');
+Query OK, 0 rows affected (0.01 sec)
+</pre>
+<p>All is "well", but this has little sense. In fact, last test will not test <em><code>DATABASE()</code></em> function. Logically, it will check that MySQL will throw specific error on event, when non-prepared statement is executed. So, nothing common with our function testing. Again - you should not use mysql-unit for testing built-in functions. They are supposed to be correct.</p>
 </section>
     </div>
 
