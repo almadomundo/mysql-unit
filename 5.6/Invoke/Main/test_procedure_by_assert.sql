@@ -153,7 +153,9 @@ BEGIN
          SIGNAL SQLSTATE '80300';
       END IF;
       -- Normal assertion:
-      SET record_assertion                  = ASSERT(@expression_mysql_unit, record_ref_value);
+      IF !record_ref_is_error THEN
+         SET record_assertion                  = ASSERT(@expression_mysql_unit, record_ref_value);
+      END IF;
       SET record_prev_id                    = record_id;
       SET error                             = '';
    END LOOP;

@@ -71,7 +71,9 @@ BEGIN
          SIGNAL SQLSTATE '80300';
       END IF;
       -- Normal assertion:
-      SET record_assertion = ASSERT(@expression_mysql_unit, record_value);
+      IF !record_is_error THEN
+         SET record_assertion = ASSERT(@expression_mysql_unit, record_value);
+      END IF;
       SET error            = '';
    END LOOP;
    CLOSE tests;
