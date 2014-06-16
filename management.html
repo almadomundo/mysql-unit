@@ -140,6 +140,17 @@ mysql> CALL TEST_FUNCTION_VERBOSE('DATABASE');
 </pre>
 <p>So, that's it. We've faced one of restrictions for mysql-unit. It uses prepared statements to evaluate dynamic SQL in expression, and they will fail if the SQL contains syntax errors. I.e.: preparation of statement will fail, then unknown statement handler will be passed to execution and then error 1243 will occur. In this section, it's just a brief overview of this corner case, but mysql-unit has such restrictions, you can check them on the <a href='/restrictions.html'>restrictions</a> page. The outcome here is: testing built-in MySQL functions in general is a bad idea.</p>
 <p><strong>4.</strong> Ok, fix the "error":</p>
+<pre>
+mysql> UPDATE TEST_FUNCTION_ASSERTIONS SET error_code='1243' WHERE id=3;
+Query OK, 1 row affected (0.05 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+</pre>
+<p><em>Now, run tests:</em></p>
+<pre>
+mysql> CALL TEST_FUNCTION_VERBOSE('DATABASE');
+Query OK, 0 rows affected (0.01 sec)
+</pre>
+<p>All is "well", but this has little sense. In fact, last test will not test <em><code>DATABASE()</code></em> function. Logically, it will check that MySQL will throw specific error on event, when non-prepared statement is executed. So, nothing common with our function testing. Again - you should not use mysql-unit for testing built-in functions. They are supposed to be correct.</p>
 </section>
     </div>
 
