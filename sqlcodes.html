@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="mysql-unit : Testing framework for stored routines in MySQL" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>mysql-unit</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/almadomundo/mysql-unit">View on GitHub</a>
+
+          <a href="index.html"><h1 id="project_title">mysql-unit</h1></a>
+          <h2 id="project_tagline">Testing framework for stored routines in MySQL</h2>
+          <section>
+              <h3 id="project_menu">
+                  +--------------+---------------+---------+<br/>
+                  | <a class="menu" href='installation.html'>Installation</a> | <a class="menu" href='manual.html'><em>Documentation</em></a> | <a class="menu" href='samples.html'>Samples</a> |<br/>
+                  +--------------+---------------+---------+<br/>
+                  1 row in set (0.00 sec)
+                  </h3>
+          </section>
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/almadomundo/mysql-unit/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/almadomundo/mysql-unit/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+<h1>
+<a name="testing-results" class="anchor" href="#testing-results"><span class="octicon octicon-link"></span></a>Testing results</h1>
+<p>This section describes what are testing results and how to interpret certain situations and sql codes. All testing procedures will continue run tests for specified function till first failure will occur. If that failure won't happen, then all tests were passed and success result will be returned.</p>
+<p>So, testing result may be: </p>
+<ul>
+    <li>Success test passing. That means, all tests ended with expected result. In this case, no error trace will be returned and server will send successful testing procedure call code to the client.</li>
+    <li>Failure on some test. Then, in general, result will consist of two parts:
+        <ul>
+            <li>Failure testing procedure call state with the corresponding SQL Exception code will be sent to the client</li>
+            <li>If call was made in verbose mode (for example, via <em><code>*_VERBOSE</code></em> call for <a href='api.html#testing-api-front'>front-API</a>), error trace will be included as a row set.</li>
+        </ul>
+    </li>
+</ul>
+<p>If error occured, then SQL Exception code will always be like <code>8****</code>, which is specific for mysql-unit. Each code has it's meaning and may be used in external libraries to determine error reason.</p>
+<h1>
+<a name="testing-trace" class="anchor" href="#testing-trace"><span class="octicon octicon-link"></span></a>Trace for failure</h1>
+<p>Testing trace will always contain same fields, but some of them may be <code>NULL</code>, depending of logical meaning of that field in terms of error, which had happened.</p>
+<p>Full fields list is:</p>
+<ul>
+    <li><strong><code>test_id</code></strong> <br/> Identifier of test, which caused failure. If it was procedure testing and failure was derived from some check in <em><code>TEST_PROCEDURE_RESULTS</code></em>, then this field will be set to id of that check.</li>
+    <li><strong><code>test_expression</code></strong> <br/> Expression, which caused failure. Usually, it is the field from the corresponding tests table, but in case of procedures testing there is an exception from that rule: if procedure call itself thrown mismatch between test expectation and actual result (for example, test expected that error will happen during procedure call and that error had not happened), then this field will contain procedure call string (so, procedure name together with arguments list from <em><code>TEST_PROCEDURE_ARGUMENTS</code></em> table)</li>
+    <li><strong><code>test_value</code></strong> <br/> A value for expression, that was expected in test</li>
+    <li><strong><code>test_is_error</code></strong> <br/>A flag which indicates either test is expected to cause error or not.</li>
+    <li><strong><code>test_error_code_expected</code></strong> <br/> Error code, which is expected in test</li>
+    <li><strong><code>test_error_code_thrown</code></strong> <br/> Error code, which was thrown by test run or <code>NULL</code> is not error happened</li>
+    <li><strong><code>test_error_message_thrown</code></strong> <br/> Message for error, which was thrown by test run or <code>NULL</code> is not error happened</li>
+    <li><strong><code>test_trace</code></strong> <br/> Literal representation of trace. This is a human-readable compilation of previous testing trace fields.</li>
+</ul>
+<p>If all tests were successful, then testing trace won't appear. Also, testing trace is always represented with one and only one row set, which contains exactly one row.</p>
+<h1>
+<a name="sql-codes" class="anchor" href="#sql-codes"><span class="octicon octicon-link"></span></a>SQL Codes for failure</h1>
+<p>Below is a list of SQL codes for exceptions, which are used in error state, which is sent to client, when testing procedure call faced a failure in some test:</p>
+<ul>
+    <li>
+        <strong>Code: <code>80000</code></strong><br/>
+        <strong>Message: <code>Test id &lt; X &gt; : assertion failed</code></strong><br/>
+        <strong>Explanation: </strong> There is a mismatch between expected result of test expression evaluation and it's actual value. This error has lowest priority and will happen only if match check for error throwing for test was passed.
+    </li>
+    <li>
+        <strong>Code: <code>80100</code></strong><br/>
+        <strong>Message: <code>Tests for specified entity name or test number were not found</code></strong><br/>
+        <strong>Explanation: </strong> No tests were found for specified entity (procedure or function) name. If <a href='api.html#testing-api-main'>main API</a> was used and test id was passed, then this error means that test with that id was not found in the corresponding tests storage table.
+    </li>
+    <li>
+        <strong>Code: <code>80200</code></strong><br/>
+        <strong>Message: <code>Test id &lt; X &gt;  : expectation of Y  failed.</code></strong><br/>
+        <strong>Explanation: </strong> Expectation for Y was failed for test with id X. Here Y can be "ERROR" or "VALIDITY". This error means that there is a mismatch between error expectation and actual result. Thus, either error happened while it wasn't expected, or it wasn't thrown while it is expected in the test.
+    </li>
+    <li>
+        <strong>Code: <code>80300</code></strong><br/>
+        <strong>Message: <code>Test id &lt; X &gt;  : expectation of specific ERROR CODE failed.</code></strong><br/>
+        <strong>Explanation: </strong> Test X is expected to throw error, and that was happened, but the actual error code differs from error code, which is expected in test.
+    </li>
+    <li>
+        <strong>Code: <code>80400</code></strong><br/>
+        <strong>Message: <code>Test id &lt; X &gt;  : expectation of Y  failed.</code></strong><br/>
+        <strong>Explanation: </strong> Same as state <code>80200</code>, but for check in <em><code>TEST_PROCEDURE_RESULTS</code></em> table. 
+    </li>
+    <li>
+        <strong>Code: <code>80500</code></strong><br/>
+        <strong>Message: <code>Specified DDL unit is not yet supported</code></strong><br/>
+        <strong>Explanation: </strong> This is reserved SQL state code, but it is used only for built-in DDL checkers. It won't appear as error code, which is sent to client. Instead this code is a regular SQL state code, which may be used as expected code inside tests. Meaning of this code is: there is no DDL checker for specified DDL unit type.
+    </li>
+    <li>
+        <strong>Code: <code>80600</code></strong><br/>
+        <strong>Message: <code>Environment integrity check failed</code></strong><br/>
+        <strong>Explanation: </strong> This code means, that some of session-specific variables, which are used inside testing procedures, are not <code>NULL</code> at the moment, when testing procedure was invoked. That means, your current connection is using some of those variables, and, due to security reasons, test procedure execution was interrupted. This is a way to prevent mysql-unit from overwriting user session data. However, if this error happened, then you should reconsider naming of your session variables in order to continue using mysql-unit.
+    </li>
+</ul>
+<h1>
+<a name="adding-codes" class="anchor" href="#adding-codes"><span class="octicon octicon-link"></span></a>Adding custom SQL codes</h1>
+<p>You are free to add codes with <code>8****</code> mask, but they should not conflict with reserved SQL codes. To make it safe, there is a reserved block for user-defined codes, it's <code>88***</code>. Codes within that block will never used inside mysql-unit in future versions and can be safely used for user-defined SQL exceptions</p>
+<p>User-defined SQL codes are like code <code>80500</code> - so, they have specific prefix only to show, that they belong to mysql-unit scope, but they are regular codes and may be used, for example, inside tests as expected error codes. The reserved <code>80***</code> codes can not be used there, since they have specific flow-control meaning.</p>
+</section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">mysql-unit maintained by <a href="https://github.com/almadomundo">almadomundo</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
