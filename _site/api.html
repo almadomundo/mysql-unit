@@ -23,7 +23,7 @@
           <section>
               <h3 id="project_menu">
                   +--------------+---------------+---------+<br/>
-                  | <a class="menu" href='installation.html'>Installation</a> | <a class="menu" href='manual.html'><strong>Documentation</strong></a> | <a class="menu" href='samples.html'>Samples</a> |<br/>
+                  | <a class="menu" href='installation.html'>Installation</a> | <a class="menu" href='manual.html'><em>Documentation</em></a> | <a class="menu" href='samples.html'>Samples</a> |<br/>
                   +--------------+---------------+---------+<br/>
                   1 row in set (0.00 sec)
                   </h3>
@@ -49,7 +49,7 @@
 <p>All storage tables are in upper case and starts with <strong><code>TEST_</code></strong> prefix. Be careful - depending from OS your server may be sensitive or not to table names case. Since installation process contains <strong><code>DROP TABLE IF EXISTS</code></strong> statement, you should be aware about case-sensitivity, if your installation database already contains tables with such names, but in different case.</p>
 <a name="storage-structure-functions" class="anchor" href="#storage-structure-functions"><p><strong>Functions testing storage</strong></p></a>
 <p>Storage for functions testing is represented by one single table. It's named <strong><code>TEST_FUNCTION_ASSERTIONS</code></strong>. Below is it's common structure:</p>
-<p><img src='/images/uml_functions.png'/></p>
+<p><img src='images/uml_functions.png'/></p>
 <p>Description for each field is:</p>
 <ul>
     <li><strong><code>id</code></strong> <br/> Primary key. This identifier will be included into failure result, if the corresponding test derived that failure</li>
@@ -67,7 +67,7 @@
     <li><strong><code>TEST_PROCEDURE_RESULTS</code></strong> <br/> Results of procedure call. One procedure may do many things, so that is why for testing it many expressions are also needed.</li>
 </ul>
 <p>Below is a diagram that illustrates relations between those tables:</p>
-<p><img src='/images/uml_procedures.png'/></p>
+<p><img src='images/uml_procedures.png'/></p>
 <p>As it was done for functions part, here is a description for each field of each table:</p>
 <ul>
     <li>
