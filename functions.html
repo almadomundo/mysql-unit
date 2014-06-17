@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="mysql-unit : Testing framework for stored routines in MySQL" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>mysql-unit</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/almadomundo/mysql-unit">View on GitHub</a>
+
+          <a href="index.html"><h1 id="project_title">mysql-unit</h1></a>
+          <h2 id="project_tagline">Testing framework for stored routines in MySQL</h2>
+          <section>
+              <h3 id="project_menu">
+                  +--------------+---------------+---------+<br/>
+                  | <a class="menu" href='installation.html'>Installation</a> | <a class="menu" href='manual.html'><em>Documentation</em></a> | <a class="menu" href='samples.html'>Samples</a> |<br/>
+                  +--------------+---------------+---------+<br/>
+                  1 row in set (0.00 sec)
+                  </h3>
+          </section>
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/almadomundo/mysql-unit/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/almadomundo/mysql-unit/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+<h1>
+<a name="built-in" class="anchor" href="#built-in"><span class="octicon octicon-link"></span></a>Built-in routines</h1>
+<p>To make testing process easier, mysql-unit provides set of built-in functions, which may be used in expressions for tests. Together with testing procedures (see <a href='api.html'>API</a> page) they are built-in routines, which will be installed with mysql-unit.</p>
+<p>Built-in functions set consists of three general parts - assert functions, DDL checkers and misc functions. This separation is mostly convention, but it may be useful for structuring inside user-defined checkers and assertions.</p>
+<p>Functions index:</p>
+<ul>
+    <li>
+        <a href="#assertion-functions">Assertion Functions</a>
+        <ul>
+            <li><a href="#function-assert">ASSERT</a></li>
+            <li><a href="#function-assert-false">ASSERT_FALSE</a></li>
+            <li><a href="#function-assert-true">ASSERT_TRUE</a></li>
+        </ul>
+    </li>
+    <li>
+        <a href="#ddl-checkers">DDL Checkers</a>
+        <ul>
+            <li><a href="#function-check-ddl">CHECK_DDL</a></li>
+            <li><a href="#function-check-ddl-column">CHECK_DDL_COLUMN</a></li>
+            <li><a href="#function-check-ddl-column-exists">CHECK_DDL_COLUMN_EXISTS</a></li>
+            <li><a href="#function-check-ddl-function">CHECK_DDL_FUNCTION</a></li>
+            <li><a href="#function-check-ddl-function-exists">CHECK_DDL_FUNCTION_EXISTS</a></li>
+            <li><a href="#function-check-ddl-procedure">CHECK_DDL_PROCEDURE</a></li>
+            <li><a href="#function-check-ddl-procedure-exists">CHECK_DDL_PROCEDURE_EXISTS</a></li>
+            <li><a href="#function-check-ddl-table">CHECK_DDL_TABLE</a></li>
+            <li><a href="#function-check-ddl-table-exists">CHECK_DDL_TABLE_EXISTS</a></li>
+            <li><a href="#function-check-ddl-trigger">CHECK_DDL_TRIGGER</a></li>
+            <li><a href="#function-check-ddl-trigger-exists">CHECK_DDL_TRIGGER_EXISTS</a></li>
+            <li><a href="#function-check-ddl-view">CHECK_DDL_VIEW</a></li>
+            <li><a href="#function-check-ddl-view-exists">CHECK_DDL_VIEW_EXISTS</a></li>
+        </ul>
+    </li>
+    <li>
+        <a href="#ddl-getters">DDL Getters</a>
+        <ul>
+            <li><a href="#function-get-column-comment">GET_COLUMN_COMMENT</a></li>
+            <li><a href="#function-get-column-field">GET_COLUMN_FIELD</a></li>
+            <li><a href="#function-get-column-type">GET_COLUMN_TYPE</a></li>
+            <li><a href="#function-get-table-comment">GET_TABLE_COMMENT</a></li>
+            <li><a href="#function-get-table-engine">GET_TABLE_ENGINE</a></li>
+            <li><a href="#function-get-table-field">GET_TABLE_FIELD</a></li>
+            <li><a href="#function-get-view-field">GET_VIEW_FIELD</a></li>
+            <li><a href="#function-get-view-is-updatable">GET_VIEW_IS_UPDATABLE</a></li>
+        </ul>
+    </li>
+    <li>
+        <a href="#misc-functions">Misc Functions</a>
+        <ul>
+            <li><a href="#function-mysql-unit-version">MYSQL_UNIT_VERSION</a></li>
+        </ul>
+    </li>
+</ul>
+<h1>
+<a name="assertion-functions" class="anchor" href="#assertion-functions"><span class="octicon octicon-link"></span></a>Assertion Functions</h1>
+<p>Assertion function are used for regular assertion checks. Assertion is expectation that some expression has certain value. And, if it hasn't, then SQL Exception <code>80000</code> is thrown.</p>          
+<p>Assertion functions are:</p>
+<p><strong><a name="function-assert" class="anchor" href="#function-assert">ASSERT</a></strong></p>
+<p>Signature: <strong><code>INTEGER ASSERT(expr VARCHAR(255), val VARCHAR(255))</code></strong></p>
+<p>Description: Basic assertion function. Assert that <em><code>expr</code></em> is equal to <em><code>val</code></em>. The <em><code>expr</code></em> may be valid expression, it will be evaluated by MySQL like any other expression before equality check. However, that expression must not be enclosed by quotes, because that will be treated as string literal.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT ASSERT("foo" REGEXP "[oa]$", 1) AS test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT ASSERT(2+2, 5) AS test;
+ERROR 1644 (80000): Assertion failed
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-assert-false" class="anchor" href="#function-assert-false">ASSERT_FALSE</a></strong></p>
+<p>Signature: <strong><code>INTEGER ASSERT_FALSE(expr VARCHAR(255))</code></strong></p>
+<p>Description: Assert that <em><code>expr</code></em> is <em><code>FALSE</code></em>. Equality is checked with integer type-casting.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT ASSERT_FALSE(10-10) AS test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT ASSERT_FALSE(LOCATE('foo', 'foobar')) AS test;
+ERROR 1644 (80000): Assertion that expression is FALSE, failed
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-assert-true" class="anchor" href="#function-assert-true">ASSERT_TRUE</a></strong></p>
+<p>Signature: <strong><code>INTEGER ASSERT_TRUE(expr VARCHAR(255))</code></strong></p>
+<p>Description: Assert that <em><code>expr</code></em> is <em><code>TRUE</code></em>. Equality is checked with integer type-casting.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT ASSERT_TRUE(CHAR_LENGTH('bar')) AS test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT ASSERT_TRUE('') AS test;
+ERROR 1644 (80000): Assertion that expression is TRUE, failed
+</pre>
+<p>&nbsp;</p>
+<h1>
+<a name="ddl-checkers" class="anchor" href="#ddl-checkers"><span class="octicon octicon-link"></span></a>DDL Checkers</h1>
+<p>All DDL (Data Definition Language) checkers are functions, which allow to check, if the corresponding DDL unit - table, view, e.t.c - exists. There is checker for each type of DDL unit and common function, which expects type of DDL unit as a parameter. However, if DDL unit type is unknown, SQL Exception <code>80500</code> will be thrown.</p>
+<p><strong><a name="function-check-ddl" class="anchor" href="#function-check-ddl">CHECK_DDL</a></strong></p>
+<p>Signature: <strong><code>INTEGER CHECK_DDL(unit_type VARCHAR(255), unit_db VARCHAR(255), unit_table VARCHAR(255), unit_name VARCHAR(255), existence INT)</code></strong></p>
+<p>Description: Check <em><code>existence</code></em> of <em><code>unit_name</code></em> with type <em><code>unit_type</code></em> in <em><code>unit_db[.unit_table]</code></em>. Here:</p>
+<p><em><code>existence</code></em></p>
+<ul>
+    <li>If set, then function will check, if the corresponding unit <strong>does exist</strong></li>
+    <li>If not set, then function will check, if the corresponding unit <strong>does not exist</strong></li>
+</ul>
+<p><em><code>unit_type</code></em></p>
+<ul>
+    <li><code>COLUMN</code> : check existence for column. For this check, parameter <em><code>unit_table</code></em> is mandatory</li>
+    <li><code>FUNCTION</code> : check existence for stored function.</li>
+    <li><code>PROCEDURE</code> : check existence for stored procedure.</li>
+    <li><code>TABLE</code> : check existence for table.</li>
+    <li><code>TRIGGER</code> : check existence for trigger. For this check, parameter <em><code>unit_table</code></em> is mandatory</li>
+    <li><code>VIEW</code> : check existence for view.</li>
+</ul>
+<p>Examples:</p>
+<pre>
+mysql> SELECT CHECK_DDL('FUNCTION', DATABASE(), '', 'ASSERT', 1) AS test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT CHECK_DDL('VIEW', DATABASE(), '', 'baz', 1) AS test;
++------+
+| test |
++------+
+|    0 |
++------+
+1 row in set (0.05 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT CHECK_DDL('SEQUENCE', DATABASE(), '', 'foo', 0) AS test;
+ERROR 1644 (80500): Specified DDL unit is not yet supported
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-check-ddl-column" class="anchor" href="#function-check-ddl-column">CHECK_DDL_COLUMN</a></strong></p>
+<p>Signature: <strong><code>INTEGER CHECK_DDL_COLUMN(unit_db VARCHAR(255), unit_table VARCHAR(255), unit_name VARCHAR(255), existence INT)</code></strong></p>
+<p>Description: Check <em><code>existence</code></em> of column <em><code>unit_name</code></em> in <em><code>unit_db.unit_table</code></em>. Here:</p>
+<p><em><code>existence</code></em></p>
+<ul>
+    <li>If set, then function will check, if the corresponding column <strong>does exist</strong></li>
+    <li>If not set, then function will check, if the corresponding column <strong>does not exist</strong></li>
+</ul>
+<p>Examples:</p>
+<pre>
+mysql> SELECT CHECK_DDL_COLUMN(DATABASE(), 'TEST_PROCEDURE_ARGUMENTS', 'test_id', 1) AS test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT CHECK_DDL_COLUMN(DATABASE(), 'TEST_PROCEDURE_ASSERTIONS', 'test_id', 0) AS test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-check-ddl-column-exists" class="anchor" href="#function-check-ddl-column-exists">CHECK_DDL_COLUMN_EXISTS</a></strong></p>
+<p>Signature: <strong><code>INTEGER CHECK_DDL_COLUMN_EXISTS(unit_db VARCHAR(255), unit_table VARCHAR(255), unit_name VARCHAR(255))</code></strong></p>
+<p>Description: Check if column <em><code>unit_name</code></em> exists in <em><code>unit_db.unit_table</code></em>. Note, that for this function it is possible to pass empty string <code>""</code> as a <em><code>unit_db</code></em> - that will be equal to current database usage.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT CHECK_DDL_COLUMN_EXISTS('', 'TEST_PROCEDURE_ASSERTIONS', 'id') AS test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.02 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT CHECK_DDL_COLUMN_EXISTS('', 'some-table', 'id') AS test;
++------+
+| test |
++------+
+|    0 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-check-ddl-function" class="anchor" href="#function-check-ddl-function">CHECK_DDL_FUNCTION</a></strong></p>
+<p>Signature: <strong><code>INTEGER CHECK_DDL_FUNCTION(unit_db VARCHAR(255), unit_name VARCHAR(255), existence INT)</code></strong></p>
+<p>Description: Check <em><code>existence</code></em> of function <em><code>unit_name</code></em> in <em><code>unit_db</code></em>. Here:</p>
+<p><em><code>existence</code></em></p>
+<ul>
+    <li>If set, then function will check, if the corresponding function <strong>does exist</strong></li>
+    <li>If not set, then function will check, if the corresponding function <strong>does not exist</strong></li>
+</ul>
+<p>This function <strong>can not</strong> be used on MySQL standard functions since they are not part of environment, but part of DBMS engine instead.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT CHECK_DDL_FUNCTION(DATABASE(), 'ASSERT_FALSE', 1) AS test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT CHECK_DDL_FUNCTION(DATABASE(), 'ASSERT_TRUE', 0) AS test;
++------+
+| test |
++------+
+|    0 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-check-ddl-function-exists" class="anchor" href="#function-check-ddl-function-exists">CHECK_DDL_FUNCTION_EXISTS</a></strong></p>
+<p>Signature: <strong><code>INTEGER CHECK_DDL_FUNCTION_EXISTS(unit_db VARCHAR(255), unit_name VARCHAR(255))</code></strong></p>
+<p>Description: Check if function <em><code>unit_name</code></em> exists in <em><code>unit_db</code></em>. Note, that for this function it is possible to pass empty string <code>""</code> as a <em><code>unit_db</code></em> - that will be equal to current database usage.</p>
+<p>This function <strong>can not</strong> be used on MySQL standard functions since they are not part of environment, but part of DBMS engine instead.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT CHECK_DDL_FUNCTION_EXISTS('', 'ASSERT') AS test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT CHECK_DDL_FUNCTION_EXISTS('', 'some-function') AS test;
++------+
+| test |
++------+
+|    0 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-check-ddl-procedure" class="anchor" href="#function-check-ddl-procedure">CHECK_DDL_PROCEDURE</a></strong></p>
+<p>Signature: <strong><code>INTEGER CHECK_DDL_PROCEDURE(unit_db VARCHAR(255), unit_name VARCHAR(255), existence INT)</code></strong></p>
+<p>Description: Check <em><code>existence</code></em> of procedure <em><code>unit_name</code></em> in <em><code>unit_db</code></em>. Here:</p>
+<p><em><code>existence</code></em></p>
+<ul>
+    <li>If set, then function will check, if the corresponding procedure <strong>does exist</strong></li>
+    <li>If not set, then function will check, if the corresponding procedure <strong>does not exist</strong></li>
+</ul>
+<p>Examples:</p>
+<pre>
+mysql> SELECT CHECK_DDL_PROCEDURE(DATABASE(), 'TEST_PROCEDURE', 1) AS test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT CHECK_DDL_PROCEDURE(DATABASE(), 'bar', 1) AS test;
++------+
+| test |
++------+
+|    0 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-check-ddl-procedure-exists" class="anchor" href="#function-check-ddl-procedure-exists">CHECK_DDL_PROCEDURE_EXISTS</a></strong></p>
+<p>Signature: <strong><code>INTEGER CHECK_DDL_PROCEDURE_EXISTS(unit_db VARCHAR(255), unit_name VARCHAR(255))</code></strong></p>
+<p>Description: Check if procedure <em><code>unit_name</code></em> exists in <em><code>unit_db</code></em>. Note, that for this function it is possible to pass empty string <code>""</code> as a <em><code>unit_db</code></em> - that will be equal to current database usage.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT CHECK_DDL_PROCEDURE_EXISTS('', 'ASSERT') AS test;
++------+
+| test |
++------+
+|    0 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT CHECK_DDL_PROCEDURE_EXISTS('', 'TEST_FUNCTION_BY_ASSERT') AS test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-check-ddl-table" class="anchor" href="#function-check-ddl-table">CHECK_DDL_TABLE</a></strong></p>
+<p>Signature: <strong><code>INTEGER CHECK_DDL_TABLE(unit_db VARCHAR(255), unit_name VARCHAR(255), existence INT)</code></strong></p>
+<p>Description: Check <em><code>existence</code></em> of table <em><code>unit_name</code></em> in <em><code>unit_db</code></em>. Here:</p>
+<p><em><code>existence</code></em></p>
+<ul>
+    <li>If set, then function will check, if the corresponding table <strong>does exist</strong></li>
+    <li>If not set, then function will check, if the corresponding table <strong>does not exist</strong></li>
+</ul>
+<p>Examples:</p>
+<pre>
+mysql> SELECT CHECK_DDL_TABLE(DATABASE(), 'TEST_FUNCTION_ASSERTIONS', 1) as test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT CHECK_DDL_TABLE(DATABASE(), 'test_function_assertions', 1) as test;
++------+
+| test |
++------+
+|    0 |
++------+
+1 row in set (0.01 sec)
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-check-ddl-table-exists" class="anchor" href="#function-check-ddl-table-exists">CHECK_DDL_TABLE_EXISTS</a></strong></p>
+<p>Signature: <strong><code>INTEGER CHECK_DDL_TABLE_EXISTS(unit_db VARCHAR(255), unit_name VARCHAR(255))</code></strong></p>
+<p>Description: Check if table <em><code>unit_name</code></em> exists in <em><code>unit_db</code></em>. Note, that for this function it is possible to pass empty string <code>""</code> as a <em><code>unit_db</code></em> - that will be equal to current database usage.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT CHECK_DDL_TABLE_EXISTS(DATABASE(), 'TEST_PROCEDURE_ASSERTIONS') as test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.02 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT CHECK_DDL_TABLE_EXISTS(DATABASE(), 'Test_Procedure_Assertions') as test;
++------+
+| test |
++------+
+|    0 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-check-ddl-trigger" class="anchor" href="#function-check-ddl-trigger">CHECK_DDL_TRIGGER</a></strong></p>
+<p>Signature: <strong><code>INTEGER CHECK_DDL_TRIGGER(unit_db VARCHAR(255), unit_table VARCHAR(255), unit_name VARCHAR(255), existence INT)</code></strong></p>
+<p>Description: Check <em><code>existence</code></em> of trigger <em><code>unit_name</code></em> in <em><code>unit_db.unit_table</code></em>. Here:</p>
+<p><em><code>existence</code></em></p>
+<ul>
+    <li>If set, then function will check, if the corresponding trigger <strong>does exist</strong></li>
+    <li>If not set, then function will check, if the corresponding trigger <strong>does not exist</strong></li>
+</ul>
+<p>Examples:</p>
+<pre>
+mysql> SELECT CHECK_DDL_TRIGGER(DATABASE(), 'debug', 'testOne', 1) AS test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT CHECK_DDL_TRIGGER(DATABASE(), 'debug', 'testTwo', 1) AS test;
++------+
+| test |
++------+
+|    0 |
++------+
+1 row in set (0.01 sec)
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-check-ddl-trigger-exists" class="anchor" href="#function-check-ddl-trigger-exists">CHECK_DDL_TRIGGER_EXISTS</a></strong></p>
+<p>Signature: <strong><code>INTEGER CHECK_DDL_TRIGGER_EXISTS(unit_db VARCHAR(255), unit_table VARCHAR(255), unit_name VARCHAR(255))</code></strong></p>
+<p>Description: Check if trigger <em><code>unit_name</code></em> exists in <em><code>unit_db.unit_table</code></em>. Note, that for this function it is possible to pass empty string <code>""</code> as a <em><code>unit_db</code></em> - that will be equal to current database usage.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT CHECK_DDL_TRIGGER_EXISTS('', 'debug', 'testOneTrigger') AS test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT CHECK_DDL_TRIGGER_EXISTS('', 'debug', 'testTwoTrigger') AS test;
++------+
+| test |
++------+
+|    0 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-check-ddl-view" class="anchor" href="#function-check-ddl-view">CHECK_DDL_VIEW</a></strong></p>
+<p>Signature: <strong><code>INTEGER CHECK_DDL_VIEW(unit_db VARCHAR(255), unit_name VARCHAR(255), existence INT)</code></strong></p>
+<p>Description: Check <em><code>existence</code></em> of view <em><code>unit_name</code></em> in <em><code>unit_db</code></em>. Here:</p>
+<p><em><code>existence</code></em></p>
+<ul>
+    <li>If set, then function will check, if the corresponding view <strong>does exist</strong></li>
+    <li>If not set, then function will check, if the corresponding view <strong>does not exist</strong></li>
+</ul>
+<p>Examples:</p>
+<pre>
+mysql> SELECT CHECK_DDL_VIEW(DATABASE(), 'foo', 0) AS test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT CHECK_DDL_VIEW(DATABASE(), 'bar', 1) AS test;
++------+
+| test |
++------+
+|    0 |
++------+
+1 row in set (0.02 sec)
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-check-ddl-view-exists" class="anchor" href="#function-check-ddl-view-exists">CHECK_DDL_VIEW_EXISTS</a></strong></p>
+<p>Signature: <strong><code>INTEGER CHECK_DDL_VIEW_EXISTS(unit_db VARCHAR(255), unit_name VARCHAR(255))</code></strong></p>
+<p>Description: Check if view <em><code>unit_name</code></em> exists in <em><code>unit_db</code></em>. Note, that for this function it is possible to pass empty string <code>""</code> as a <em><code>unit_db</code></em> - that will be equal to current database usage.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT CHECK_DDL_VIEW_EXISTS('', 'baz') AS test;
++------+
+| test |
++------+
+|    0 |
++------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT !CHECK_DDL_VIEW_EXISTS('', 'feo') AS test;
++------+
+| test |
++------+
+|    1 |
++------+
+1 row in set (0.01 sec)
+</pre>
+<p>&nbsp;</p>
+<h1>
+<a name="ddl-getters" class="anchor" href="#ddl-getters"><span class="octicon octicon-link"></span></a>DDL Getters</h1>
+<p>While DDL checkers are used for checking if the corresponding DDL entity exists, it still is not enough to provide all information about DDL. Because, for example, some procedure test may want to check not only that specific column was created, but also if that column has certain type. For such purposes there is set of functions, which return information about DDL structures.</p>
+<p><strong><a name="function-get-column-comment" class="anchor" href="#function-get-column-comment">GET_COLUMN_COMMENT</a></strong></p>
+<p>Signature: <strong><code>VARCHAR GET_COLUMN_COMMENT(unit_db VARCHAR(255), unit_table VARCHAR(255), unit_name VARCHAR(255))</code></strong></p>
+<p>Description: Get comments for column <em><code>unit_name</code></em> in <em><code>unit_db.unit_table</code></em>. Note, that for this function it is possible to pass empty string <code>""</code> as a <em><code>unit_db</code></em> - that will be equal to current database usage. If specified column does not exists, this function will throw <code>80700</code> SQL Exception.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT GET_COLUMN_COMMENT('', 'debug', 'val') AS value;
++-------+
+| value |
++-------+
+|       |
++-------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT GET_COLUMN_COMMENT('', 'debug', 'id');
+ERROR 1644 (80700): Column `test`.`debug`.`id` does not exist
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-get-column-field" class="anchor" href="#function-get-column-field">GET_COLUMN_FIELD</a></strong></p>
+<p>Signature: <strong><code>VARCHAR GET_COLUMN_FIELD(unit_db VARCHAR(255), unit_table VARCHAR(255), unit_name VARCHAR(255), unit_field VARCHAR(255))</code></strong></p>
+<p>Description: Get <em><code>unit_field</code></em> for column <em><code>unit_name</code></em> in <em><code>unit_db.unit_table</code></em>. Note, that for this function it is possible to pass empty string <code>""</code> as a <em><code>unit_db</code></em> - that will be equal to current database usage. If specified column does not exists, this function will throw <code>80700</code> SQL Exception. For <em><code>unit_field</code></em> any arbitrary column DDL property, which is supported by MySQL, is applicable.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT GET_COLUMN_FIELD('', 'debug', 'expr', 'IS_NULLABLE') AS value;
++-------+
+| value |
++-------+
+| YES   |
++-------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT GET_COLUMN_FIELD('', 'debug', 'expr', 'PRIVILEGES') AS value;
++---------------------------------+
+| value                           |
++---------------------------------+
+| select,insert,update,references |
++---------------------------------+
+1 row in set (0.01 sec)
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-get-column-type" class="anchor" href="#function-get-column-type">GET_COLUMN_TYPE</a></strong></p>
+<p>Signature: <strong><code>VARCHAR GET_COLUMN_TYPE(unit_db VARCHAR(255), unit_table VARCHAR(255), unit_name VARCHAR(255))</code></strong></p>
+<p>Description: Get type for column <em><code>unit_name</code></em> in <em><code>unit_db.unit_table</code></em>. Note, that for this function it is possible to pass empty string <code>""</code> as a <em><code>unit_db</code></em> - that will be equal to current database usage. If specified column does not exists, this function will throw <code>80700</code> SQL Exception.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT GET_COLUMN_TYPE('', 'debug', 'expr') AS value;
++--------------+
+| value        |
++--------------+
+| varchar(255) |
++--------------+
+1 row in set (0.01 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT GET_COLUMN_TYPE('', 'debug', 'id') AS value;
+ERROR 1644 (80700): Column `test`.`debug`.`id` does not exist
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-get-table-comment" class="anchor" href="#function-get-table-comment">GET_TABLE_COMMENT</a></strong></p>
+<p>Signature: <strong><code>VARCHAR GET_TABLE_COMMENT(unit_db VARCHAR(255), unit_name VARCHAR(255))</code></strong></p>
+<p>Description: Get comments for table <em><code>unit_name</code></em> in <em><code>unit_db</code></em>. Note, that for this function it is possible to pass empty string <code>""</code> as a <em><code>unit_db</code></em> - that will be equal to current database usage. If specified table does not exists, this function will throw <code>80700</code> SQL Exception.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT GET_TABLE_COMMENT('', 'debug') AS value;
++-------+
+| value |
++-------+
+|       |
++-------+
+1 row in set (0.01 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT GET_TABLE_COMMENT('', 'some-table') AS value;
+ERROR 1644 (80700): Table `test`.`some-table` does not exist
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-get-table-engine" class="anchor" href="#function-get-table-engine">GET_TABLE_ENGINE</a></strong></p>
+<p>Signature: <strong><code>VARCHAR GET_TABLE_ENGINE(unit_db VARCHAR(255), unit_name VARCHAR(255))</code></strong></p>
+<p>Description: Get storage-engine for table <em><code>unit_name</code></em> in <em><code>unit_db</code></em>. Note, that for this function it is possible to pass empty string <code>""</code> as a <em><code>unit_db</code></em> - that will be equal to current database usage. If specified table does not exists, this function will throw <code>80700</code> SQL Exception.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT GET_TABLE_ENGINE('', 'debug') AS value;
++--------+
+| value  |
++--------+
+| InnoDB |
++--------+
+1 row in set (0.02 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT GET_TABLE_ENGINE('', 'some-other-table') AS value;
+ERROR 1644 (80700): Table `test`.`some-other-table` does not exist
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-get-table-field" class="anchor" href="#function-get-table-field">GET_TABLE_FIELD</a></strong></p>
+<p>Signature: <strong><code>VARCHAR GET_TABLE_FIELD(unit_db VARCHAR(255), unit_name VARCHAR(255), unit_field VARCHAR(255))</code></strong></p>
+<p>Description: Get <em><code>unit_field</code></em> for table <em><code>unit_name</code></em> in <em><code>unit_db</code></em>. Note, that for this function it is possible to pass empty string <code>""</code> as a <em><code>unit_db</code></em> - that will be equal to current database usage. If specified table does not exists, this function will throw <code>80700</code> SQL Exception. For <em><code>unit_field</code></em> any arbitrary table DDL property, which is supported by MySQL, is applicable.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT GET_TABLE_FIELD('', 'debug', 'ROW_FORMAT') AS value;
++---------+
+| value   |
++---------+
+| Compact |
++---------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT GET_TABLE_FIELD('', 'debug', 'TABLE_COLLATION') AS value;
++-------------------+
+| value             |
++-------------------+
+| latin1_swedish_ci |
++-------------------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-get-view-field" class="anchor" href="#function-get-view-field">GET_VIEW_FIELD</a></strong></p>
+<p>Signature: <strong><code>VARCHAR GET_VIEW_FIELD(unit_db VARCHAR(255), unit_name VARCHAR(255), unit_field VARCHAR(255))</code></strong></p>
+<p>Description: Get <em><code>unit_field</code></em> for view <em><code>unit_name</code></em> in <em><code>unit_db</code></em>. Note, that for this function it is possible to pass empty string <code>""</code> as a <em><code>unit_db</code></em> - that will be equal to current database usage. If specified table does not exists, this function will throw <code>80700</code> SQL Exception. For <em><code>unit_field</code></em> any arbitrary view DDL property, which is supported by MySQL, is applicable.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT GET_VIEW_FIELD('', 'view_one', 'CHECK_OPTION') AS value;
++-------+
+| value |
++-------+
+| NONE  |
++-------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT GET_VIEW_FIELD('', 'view_one', 'SECURITY_TYPE') AS value;
++---------+
+| value   |
++---------+
+| DEFINER |
++---------+
+1 row in set (0.01 sec)
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+<p><strong><a name="function-get-view-is-updatable" class="anchor" href="#function-get-view-is-updatable">GET_VIEW_IS_UPDATABLE</a></strong></p>
+<p>Signature: <strong><code>VARCHAR GET_VIEW_IS_UPDATABLE(unit_db VARCHAR(255), unit_name VARCHAR(255))</code></strong></p>
+<p>Description: Get updatable flag for view <em><code>unit_name</code></em> in <em><code>unit_db</code></em>. Note, that for this function it is possible to pass empty string <code>""</code> as a <em><code>unit_db</code></em> - that will be equal to current database usage. If specified table does not exists, this function will throw <code>80700</code> SQL Exception.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT GET_VIEW_IS_UPDATABLE('', 'view_one') AS value;
++-------+
+| value |
++-------+
+| YES   |
++-------+
+1 row in set (0.01 sec)
+</pre>
+<p>&nbsp;</p>
+<pre>
+mysql> SELECT GET_VIEW_IS_UPDATABLE('', 'view_two') AS value;
+ERROR 1644 (80700): View `test`.`view_two` does not exist
+</pre>
+<p>&nbsp;</p>
+<h1>
+<a name="misc-functions" class="anchor" href="#misc-functions"><span class="octicon octicon-link"></span></a>Misc Functions</h1>
+<p>There is also misc functions, which provide some additional information about mysql-unit. This functions normally would not be used in testing expressions, but, however, may be useful for debugging.</p>
+<p><strong><a name="function-mysql-unit-version" class="anchor" href="#function-mysql-unit-version">MYSQL_UNIT_VERSION</a></strong></p>
+<p>Signature: <strong><code>VARCHAR MYSQL_UNIT_VERSION()</code></strong></p>
+<p>Description: Get version for installed instance of mysql-unit.</p>
+<p>Examples:</p>
+<pre>
+mysql> SELECT MYSQL_UNIT_VERSION();
++----------------------+
+| MYSQL_UNIT_VERSION() |
++----------------------+
+| 0.3-beta             |
++----------------------+
+1 row in set (0.00 sec)
+</pre>
+<p>&nbsp;</p><p>&nbsp;</p>
+</section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">mysql-unit maintained by <a href="https://github.com/almadomundo">almadomundo</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
