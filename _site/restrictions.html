@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="mysql-unit : Testing framework for stored routines in MySQL" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>mysql-unit</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/almadomundo/mysql-unit">View on GitHub</a>
+
+          <a href="index.html"><h1 id="project_title">mysql-unit</h1></a>
+          <h2 id="project_tagline">Testing framework for stored routines in MySQL</h2>
+          <section>
+              <h3 id="project_menu">
+                  +--------------+---------------+---------+<br/>
+                  | <a class="menu" href='installation.html'>Installation</a> | <a class="menu" href='manual.html'><em>Documentation</em></a> | <a class="menu" href='samples.html'>Samples</a> |<br/>
+                  +--------------+---------------+---------+<br/>
+                  1 row in set (0.00 sec)
+                  </h3>
+          </section>
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/almadomundo/mysql-unit/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/almadomundo/mysql-unit/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+<p class="navbar"><strong><a href="functions.html">&lt;&lt; Previous chapter (Functions & checkers)</a> | <a href="troubleshooting.html">Next chapter (Troubleshooting) &gt;&gt;</a></strong></p>
+<p>&nbsp;</p>
+<h1>
+<a name="restrictions" class="anchor" href="#restrictions"><span class="octicon octicon-link"></span></a>Restrictions</h1>
+<p>Despite such things as dynamic expression evaluation or nested exceptions handling, mysql-unit has it's limitations. It's core uses generic MySQL stored code, thus, some of those limitations are derived from that. Also, mysql-unit is using some database - the one, to which it is installed, which also may cause some restrictions.</p>
+<p>In most cases, you can overcome this limitations, but still it is not always possible. And, if some of those restrictions are important for your system, then, probably, you'll not be able to use mysql-unit for testing your entities</p>
+<h1>
+<a name="restrictions-entities" class="anchor" href="#restrictions-entities"><span class="octicon octicon-link"></span></a>On Tested Entities</h1>
+<p>Currently, there is impossible to:</p>
+<ul>
+    <li>Test code in triggers. This functionality may be added in next versions, but model of testing for this code isn't clear for now.</li>
+    <li>Test procedures row set. That is: in MySQL stored procedures, you can do <code>SELECT</code> statements right in it's code. This will cause immediate sending te row set to the client. So, some of procedures may "return" those row sets. By definition, it is impossible to "select" something "from procedure" - because there may be many row sets. To overcome this, you may replace plain <code>SELECT</code> to insertions into temporary table. Then you'll be able to operate on row set with querying that table.</li>
+    <li>Test the entities, inaccessible due to permissions reasons. It's obvious - you'll be able to test only those items, which are accessible for user, invoking testing API.</li>
+</ul>
+<h1>
+<a name="restrictions-expressions" class="anchor" href="#restrictions-expressions"><span class="octicon octicon-link"></span></a>On Tested Expressions</h1>
+<p>In addition to limitations on tested entities, there are also some things, which can not be tested in expressions:</p>
+<ul>
+    <li>Expressions-queries, which return more than one row. Row sets are not possible to test within single expression, and, if it is the intention, you should test each row in a separate test-case.</li>
+    <li>Expressions that cause syntax errors. Since mysql-unit is using prepared statements under the hood, it won't be possible to prepare them from syntax-invalid queries. There is nothing you can do to overcome that, so - use correct syntax in your test-cases.</li>
+</ul>
+</section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">mysql-unit maintained by <a href="https://github.com/almadomundo">almadomundo</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>

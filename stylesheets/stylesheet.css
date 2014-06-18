@@ -277,6 +277,11 @@ Full-Width Styles
   text-shadow: #111 0px 0px 10px;
 }
 
+.navbar {
+  width: 100%;
+  text-align: center;
+}
+
 #forkme_banner {
   display: block;
   position: absolute;

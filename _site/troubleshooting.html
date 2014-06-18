@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="mysql-unit : Testing framework for stored routines in MySQL" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>mysql-unit</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/almadomundo/mysql-unit">View on GitHub</a>
+
+          <a href="index.html"><h1 id="project_title">mysql-unit</h1></a>
+          <h2 id="project_tagline">Testing framework for stored routines in MySQL</h2>
+          <section>
+              <h3 id="project_menu">
+                  +--------------+---------------+---------+<br/>
+                  | <a class="menu" href='installation.html'>Installation</a> | <a class="menu" href='manual.html'><em>Documentation</em></a> | <a class="menu" href='samples.html'>Samples</a> |<br/>
+                  +--------------+---------------+---------+<br/>
+                  1 row in set (0.00 sec)
+                  </h3>
+          </section>
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/almadomundo/mysql-unit/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/almadomundo/mysql-unit/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+<p class="navbar"><strong><a href="restrictions.html">&lt;&lt; Previous chapter (Framework restrictions)</a> | <a href="samples.html">Next chapter (Samples) &gt;&gt;</a></strong></p>
+<p>&nbsp;</p>
+<h1>
+<a name="troubleshooting" class="anchor" href="#troubleshooting"><span class="octicon octicon-link"></span></a>Troubleshooting</h1>
+<p>There may be situations, when all seems to be ok, but you're getting unexpected results. For that, you can check this page and see if your case is described here. mysql-unit is just a software, like all other things, so it may contain a bug. If so - then, please, send it and help to improve this project</p>
+<h1>
+<a name="session-variables" class="anchor" href="#session-variables"><span class="octicon octicon-link"></span></a>Session Variables</h1>
+<p>To maintain nested model for exceptions and for dynamic evaluation of expressions, mysql-unit is using some session variables inside it's core. That causes imminent side-effect on environment, and, therefore, you must be sure that those variables are not used in your system anywhere else.</p>
+<p>Before starting test procedure, mysql-unit will check if all of those variables are not used. And, if something went wrong, you'll see:</p>
+<pre>
+mysql> CALL TEST_PROCEDURE('DUMMY_PROC');
+ERROR 1644 (80600): Environment integrity check failed
+</pre>
+<p>This SQL exception code is a sign, that your environment is using some of reserved variables. There is a service table, where all those variables are listed. It's called <strong><code>test_service_variables</code></strong>. Note, that it's named in lower case (so to show that it's for internal usage). Normally, you won't do anything with this table, but it's content is exactly names of variables, which will be checked. The structure of the table is:</p>
+<ul>
+    <li><strong><code>id</code></strong> <br/>Primary key for the table.</li>
+    <li><strong><code>origin</code></strong> <br/> Scope, within which variable is used.</li>
+    <li><strong><code>var_name</code></strong> <br/> Name of the variable</li>
+    <li><strong><code>init_value</code></strong> <br/> Value, which will be used inside scope when initializing a variable.</li>
+</ul>
+<p>So, you should check, what are names of variables, which are used in your installation for mysql-unit:</p>
+<pre>
+mysql> SELECT var_name FROM test_service_variables;
++--------------------------------+
+| var_name                       |
++--------------------------------+
+| @thrown_sqlstate_mysql_unit    |
+| @thrown_message_mysql_unit     |
+| @thrown_code_mysql_unit        |
+| @record_id_mysql_unit          |
+| @record_expression_mysql_unit  |
+| @record_value_mysql_unit       |
+| @record_is_error_mysql_unit    |
+| @record_error_code_mysql_unit  |
+| @record_thrown_code_mysql_unit |
+| @record_error_text_mysql_unit  |
+| @statement_mysql_unit          |
+| @expression_mysql_unit         |
+| @thrown_sqlstate_mysql_unit    |
+| @thrown_message_mysql_unit     |
+| @thrown_code_mysql_unit        |
+| @record_id_mysql_unit          |
+| @record_expression_mysql_unit  |
+| @record_value_mysql_unit       |
+| @record_is_error_mysql_unit    |
+| @record_error_code_mysql_unit  |
+| @record_thrown_code_mysql_unit |
+| @record_error_text_mysql_unit  |
+| @statement_mysql_unit          |
+| @expression_mysql_unit         |
++--------------------------------+
+24 rows in set (0.00 sec)
+</pre>
+<p>And after that, you need to decide what to do. You may review your queries or external code and find out where did you use conflicting variables. Non-safe way will be to force release of all used variable. You may do it with:</p>
+<pre>
+mysql> CALL RELEASE_FUNCTION_VARIABLES();
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> CALL RELEASE_PROCEDURE_VARIABLES();
+Query OK, 0 rows affected (0.00 sec)
+</pre>
+<p>This will release all variables within function & procedure scope. But be careful - if some of your external logic is using the data in those variables, it may harm your system.</p>
+<p>Note, that this problem should <strong>never</strong> occur, if your code didn't use reserved variables. If you are sure that you are not using those variables, but the code <code>80600</code> appeared, then it's probably a bug in mysql-unit.</p>
+<h1>
+<a name="reporting-a-bug" class="anchor" href="#reporting-a-bug"><span class="octicon octicon-link"></span></a>Reporting a Bug</h1>
+<p>If you think, that you've found a bug in mysql-unit, then, please, send a feedback via <a href='https://github.com/almadomundo/mysql-unit/issues'>GitHub issues</a> page with "bug" label. Following data will help to resolve the issue:</p>
+<ul>
+    <li>Version of MySQL server</li>
+    <li>Version of mysql-unit</li>
+    <li>What did you do. So what was actions sequence, which caused a bug</li>
+    <li>What is the expected result</li>
+    <li>What was actual result</li>
+</ul>
+<p>Thank you for sending good description for bugs!</p>
+</section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">mysql-unit maintained by <a href="https://github.com/almadomundo">almadomundo</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
